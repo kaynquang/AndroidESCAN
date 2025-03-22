@@ -53,12 +53,19 @@ public class SignInActivity extends AppCompatActivity {
         // Initialize Firebase Auth
         firebaseAuth = FirebaseAuth.getInstance();
         
-        // Configure Google Sign In
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
-        googleSignInClient = GoogleSignIn.getClient(this, gso);
+        try {
+            // Configure Google Sign In
+            GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestIdToken(getString(R.string.default_web_client_id))
+                    .requestEmail()
+                    .build();
+            googleSignInClient = GoogleSignIn.getClient(this, gso);
+        } catch (Exception e) {
+            Log.e(TAG, "Error configuring Google Sign In: " + e.getMessage());
+            // Disable Google sign-in button if configuration fails
+            binding.googleSignInButton.setEnabled(false);
+            binding.googleSignInButton.setAlpha(0.5f);
+        }
         
         setupClickListeners();
     }
@@ -91,7 +98,12 @@ public class SignInActivity extends AppCompatActivity {
         // Google sign in button click
         binding.googleSignInButton.setOnClickListener(v -> {
             Log.d(TAG, "Google sign-in button clicked");
-            signInWithGoogle();
+            if (googleSignInClient != null) {
+                signInWithGoogle();
+            } else {
+                Toast.makeText(this, "Google Sign-In is not configured properly", Toast.LENGTH_LONG).show();
+                Log.e(TAG, "Google Sign-In client is null. Check your configuration.");
+            }
         });
 
         // Forgot password click
@@ -193,8 +205,13 @@ public class SignInActivity extends AppCompatActivity {
      * Starts the Google sign-in process
      */
     private void signInWithGoogle() {
-        Intent signInIntent = googleSignInClient.getSignInIntent();
-        startActivityForResult(signInIntent, RC_SIGN_IN);
+        try {
+            Intent signInIntent = googleSignInClient.getSignInIntent();
+            startActivityForResult(signInIntent, RC_SIGN_IN);
+        } catch (Exception e) {
+            Log.e(TAG, "Error starting Google Sign-In: " + e.getMessage(), e);
+            Toast.makeText(this, "Google Sign-In failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
     
     @Override
@@ -203,16 +220,44 @@ public class SignInActivity extends AppCompatActivity {
         
         // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
-                // Google Sign In was successful, authenticate with Firebase
-                GoogleSignInAccount account = task.getResult(ApiException.class);
-                Log.d(TAG, "firebaseAuthWithGoogle:" + account.getId());
-                firebaseAuthWithGoogle(account.getIdToken());
-            } catch (ApiException e) {
-                // Google Sign In failed
-                Log.w(TAG, "Google sign in failed", e);
-                Toast.makeText(this, "Google sign in failed", Toast.LENGTH_SHORT).show();
+                Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+                try {
+                    // Google Sign In was successful, authenticate with Firebase
+                    GoogleSignInAccount account = task.getResult(ApiException.class);
+                    Log.d(TAG, "firebaseAuthWithGoogle:" + account.getId());
+                    firebaseAuthWithGoogle(account.getIdToken());
+                } catch (ApiException e) {
+                    // Google Sign In failed
+                    Log.w(TAG, "Google sign in failed", e);
+                    String errorMessage = "Google sign in failed";
+                    
+                    // Get more detailed error message based on status code
+                    switch (e.getStatusCode()) {
+                        case 12500: // SIGN_IN_CANCELLED
+                            errorMessage = "Sign in was cancelled";
+                            break;
+                        case 12501: // SIGN_IN_CURRENTLY_IN_PROGRESS
+                            errorMessage = "Sign in already in progress";
+                            break;
+                        case 12502: // SIGN_IN_FAILED
+                            errorMessage = "Sign in failed - please check your internet connection";
+                            break;
+                        case 7: // NETWORK_ERROR
+                            errorMessage = "Network error - please check your connection";
+                            break;
+                        case 16: // DEVELOPER_ERROR
+                            errorMessage = "Developer configuration error - check Firebase setup";
+                            break;
+                        default:
+                            errorMessage = "Google sign in failed (code: " + e.getStatusCode() + ")";
+                    }
+                    
+                    Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show();
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Unexpected exception during Google Sign-In: " + e.getMessage(), e);
+                Toast.makeText(this, "Google Sign-In encountered an error", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -234,7 +279,7 @@ public class SignInActivity extends AppCompatActivity {
                     } else {
                         // Sign in failed
                         Log.w(TAG, "signInWithCredential:failure", task.getException());
-                        Toast.makeText(SignInActivity.this, "Authentication failed", 
+                        Toast.makeText(SignInActivity.this, "Firebase Authentication failed", 
                                 Toast.LENGTH_SHORT).show();
                     }
                     
