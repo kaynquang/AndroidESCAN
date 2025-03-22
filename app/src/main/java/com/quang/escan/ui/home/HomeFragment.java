@@ -53,37 +53,15 @@ public class HomeFragment extends Fragment {
 
     private void setupRecentFiles() {
         // Set up RecyclerView
-        binding.recyclerRecentFiles.setLayoutManager(new LinearLayoutManager(requireContext()));
+        binding.recyclerviewRecentFiles.setLayoutManager(new LinearLayoutManager(requireContext()));
         
-        // Create and set adapter
-        recentFilesAdapter = new RecentFilesAdapter(generateSampleFiles());
-        binding.recyclerRecentFiles.setAdapter(recentFilesAdapter);
-    }
-    
-    private List<RecentFile> generateSampleFiles() {
-        // Generate some sample files for demonstration
-        List<RecentFile> files = new ArrayList<>();
+        // Create and set adapter with empty list
+        recentFilesAdapter = new RecentFilesAdapter(new ArrayList<>());
+        binding.recyclerviewRecentFiles.setAdapter(recentFilesAdapter);
         
-        // Sample formats
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm", Locale.getDefault());
-        
-        // Add sample files
-        files.add(new RecentFile(
-                "Job Application Letter", 
-                dateFormat.format(new Date(System.currentTimeMillis() - 86400000)), // Yesterday
-                null));
-        
-        files.add(new RecentFile(
-                "Requirements Document", 
-                dateFormat.format(new Date(System.currentTimeMillis() - 172800000)), // 2 days ago
-                null));
-        
-        files.add(new RecentFile(
-                "Recommendation Letter", 
-                dateFormat.format(new Date(System.currentTimeMillis() - 259200000)), // 3 days ago
-                null));
-        
-        return files;
+        // Show empty state view since we have no files
+        binding.emptyState.setVisibility(View.VISIBLE);
+        binding.recyclerviewRecentFiles.setVisibility(View.GONE);
     }
 
     private void setupClickListeners() {
@@ -94,9 +72,14 @@ public class HomeFragment extends Fragment {
         });
         
         // Feature buttons
-        binding.featureScanCode.setOnClickListener(v -> {
-            Log.d(TAG, "Scan Code clicked");
-            navController.navigate(R.id.navigation_scan);
+        binding.featureExtractText.setOnClickListener(v -> {
+            Log.d(TAG, "Extract Text clicked");
+            // Text extraction feature implementation
+        });
+        
+        binding.featureExtractHandwriting.setOnClickListener(v -> {
+            Log.d(TAG, "Extract Handwriting clicked");
+            // Handwriting extraction feature implementation
         });
         
         binding.featureWatermark.setOnClickListener(v -> {
@@ -104,79 +87,55 @@ public class HomeFragment extends Fragment {
             // Watermark feature implementation
         });
         
-        binding.featureEsignPdf.setOnClickListener(v -> {
-            Log.d(TAG, "eSign PDF clicked");
-            // eSign PDF feature implementation
+        binding.featurePdfConvert.setOnClickListener(v -> {
+            Log.d(TAG, "PDF Convert clicked");
+            // PDF conversion feature implementation
         });
         
-        binding.featureSplitPdf.setOnClickListener(v -> {
-            Log.d(TAG, "Split PDF clicked");
-            // Split PDF feature implementation
+        binding.featureQrScan.setOnClickListener(v -> {
+            Log.d(TAG, "QR Scan clicked");
+            // QR code scanning implementation
         });
         
-        binding.featureMergePdf.setOnClickListener(v -> {
-            Log.d(TAG, "Merge PDF clicked");
-            // Merge PDF feature implementation
+        binding.featureTranslate.setOnClickListener(v -> {
+            Log.d(TAG, "Translate clicked");
+            // Translation feature implementation
         });
         
-        binding.featureProtectPdf.setOnClickListener(v -> {
-            Log.d(TAG, "Protect PDF clicked");
-            // Protect PDF feature implementation
+        // Collapse recent files
+        binding.btnCollapseRecent.setOnClickListener(v -> {
+            Log.d(TAG, "Collapse Recent Files clicked");
+            toggleRecentFilesVisibility();
         });
         
-        binding.featureCompressPdf.setOnClickListener(v -> {
-            Log.d(TAG, "Compress PDF clicked");
-            // Compress PDF feature implementation
-        });
-        
-        binding.featureAllTools.setOnClickListener(v -> {
-            Log.d(TAG, "All Tools clicked");
-            showAllFeatures();
-        });
-        
-        // View all files button
-        binding.btnViewAllFiles.setOnClickListener(v -> {
-            Log.d(TAG, "View All Files clicked");
-            // Navigate to files screen
-        });
-        
-        // Floating action buttons
-        binding.fabScan.setOnClickListener(v -> {
-            Log.d(TAG, "Scan FAB clicked");
-            navController.navigate(R.id.navigation_scan);
-        });
-        
-        binding.fabImport.setOnClickListener(v -> {
-            Log.d(TAG, "Import FAB clicked");
-            // Import from gallery implementation
+        // Contact Us button
+        binding.fabContactUs.setOnClickListener(v -> {
+            Log.d(TAG, "Contact Us clicked");
+            showContactDialog();
         });
     }
 
     /**
-     * Shows all available features in a dialog or new screen
+     * Toggles the visibility of the recent files section
      */
-    private void showAllFeatures() {
-        // Create and show a dialog with all features
+    private void toggleRecentFilesVisibility() {
+        if (binding.emptyState.getVisibility() == View.VISIBLE) {
+            binding.emptyState.setVisibility(View.GONE);
+            binding.btnCollapseRecent.setRotation(0); // Right arrow
+        } else {
+            binding.emptyState.setVisibility(View.VISIBLE);
+            binding.btnCollapseRecent.setRotation(90); // Down arrow
+        }
+    }
+    
+    /**
+     * Shows the contact dialog with support information
+     */
+    private void showContactDialog() {
         new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-            .setTitle("All Tools")
-            .setItems(new String[]{
-                "Scan Code",
-                "Watermark",
-                "eSign PDF",
-                "Split PDF",
-                "Merge PDF",
-                "Protect PDF",
-                "Compress PDF",
-                "OCR (Text Recognition)",
-                "PDF to Word",
-                "Word to PDF",
-                "Image to PDF"
-            }, (dialog, which) -> {
-                // Handle item selection if needed
-                Log.d(TAG, "Feature selected: " + which);
-                // Implement feature selection handling
-            })
-            .setNegativeButton("Close", null)
+            .setTitle("Contact Us")
+            .setMessage("Need help with the app? Contact our support team:\n\nEmail: support@escan.com\nPhone: +1-800-123-4567")
+            .setPositiveButton("OK", null)
             .show();
     }
 

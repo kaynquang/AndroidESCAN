@@ -6,6 +6,7 @@
     <!-- App theme colors -->
     <color name="primary">#4285F4</color>
     <color name="primary_variant">#3367D6</color>
+    <color name="primary_light">#D2E3FC</color>
     <color name="secondary">#7BAAF7</color>
     <color name="secondary_variant">#5D96F5</color>
     

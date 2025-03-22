@@ -50,7 +50,7 @@
         android:id="@+id/name_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="32dp"
         android:background="@drawable/edit_text_background"
         android:gravity="center_vertical"
         android:orientation="horizontal"
@@ -62,15 +62,15 @@
         <ImageView
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:layout_marginEnd="12dp"
             android:contentDescription="Name Icon"
-            android:src="@android:drawable/ic_menu_myplaces"
+            android:src="@android:drawable/ic_menu_my_calendar"
             app:tint="@color/text_secondary" />
 
         <EditText
             android:id="@+id/name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
             android:background="@null"
             android:hint="Full Name"
             android:inputType="textPersonName"
@@ -95,7 +95,6 @@
         <ImageView
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:layout_marginEnd="12dp"
             android:contentDescription="Email Icon"
             android:src="@android:drawable/ic_dialog_email"
             app:tint="@color/text_secondary" />
@@ -104,6 +103,7 @@
             android:id="@+id/email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
             android:background="@null"
             android:hint="Email address"
             android:inputType="textEmailAddress"
@@ -128,7 +128,6 @@
         <ImageView
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:layout_marginEnd="12dp"
             android:contentDescription="Password Icon"
             android:src="@android:drawable/ic_lock_idle_lock"
             app:tint="@color/text_secondary" />
@@ -137,6 +136,7 @@
             android:id="@+id/password"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
             android:layout_weight="1"
             android:background="@null"
             android:hint="Password"
@@ -145,12 +145,11 @@
             android:textColorHint="@color/text_tertiary"
             android:textSize="16sp" />
 
-        <ImageButton
+        <ImageView
             android:id="@+id/toggle_password_visibility"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Toggle password visibility"
+            android:contentDescription="Toggle Password Visibility"
             android:src="@android:drawable/ic_menu_view"
             app:tint="@color/text_secondary" />
     </LinearLayout>
@@ -171,97 +170,35 @@
         <ImageView
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:layout_marginEnd="12dp"
             android:contentDescription="Confirm Password Icon"
             android:src="@android:drawable/ic_lock_idle_lock"
             app:tint="@color/text_secondary" />
 
         <EditText
             android:id="@+id/confirm_password"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_marginStart="16dp"
             android:background="@null"
             android:hint="Confirm Password"
             android:inputType="textPassword"
             android:textColor="@color/text_primary"
             android:textColorHint="@color/text_tertiary"
             android:textSize="16sp" />
-
-        <ImageButton
-            android:id="@+id/toggle_confirm_password_visibility"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Toggle password visibility"
-            android:src="@android:drawable/ic_menu_view"
-            app:tint="@color/text_secondary" />
     </LinearLayout>
 
     <Button
         android:id="@+id/sign_up_button"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="24dp"
         android:background="@drawable/primary_button_background"
-        android:text="CREATE ACCOUNT"
+        android:text="SIGN UP"
         android:textColor="@color/white"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/confirm_password_container" />
-
-    <LinearLayout
-        android:id="@+id/divider_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:gravity="center"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/sign_up_button">
-
-        <View
-            android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_weight="1"
-            android:background="@color/input_border" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
-            android:text="OR"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp" />
-
-        <View
-            android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_weight="1"
-            android:background="@color/input_border" />
-    </LinearLayout>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/google_sign_in_button"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="143dp"
-        android:layout_height="57dp"
-        android:layout_marginTop="16dp"
-        android:text="Google"
-        android:textColor="@color/text_primary"
-        android:textSize="16sp"
-        app:cornerRadius="8dp"
-        app:icon="@drawable/ic_google"
-        app:iconGravity="textStart"
-        app:iconPadding="8dp"
-        app:iconTint="@null"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/divider_container"
-        app:strokeColor="@color/input_border"
-        app:strokeWidth="1dp" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -274,10 +211,9 @@
         app:layout_constraintStart_toStartOf="parent">
 
         <TextView
-            android:id="@+id/sign_in_prompt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="I Already Have an Account "
+            android:text="Already have an account? "
             android:textColor="@color/text_secondary"
             android:textSize="14sp" />
 
@@ -285,7 +221,7 @@
             android:id="@+id/sign_in_link"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Log in"
+            android:text="Sign In"
             android:textColor="@color/primary"
             android:textSize="14sp"
             android:textStyle="bold" />

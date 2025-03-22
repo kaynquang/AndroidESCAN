@@ -10,23 +10,15 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GoogleAuthProvider;
 import com.quang.escan.MainActivity;
 import com.quang.escan.R;
 import com.quang.escan.databinding.ActivitySignInBinding;
@@ -37,11 +29,9 @@ import com.quang.escan.databinding.ActivitySignInBinding;
 public class SignInActivity extends AppCompatActivity {
 
     private static final String TAG = "SignInActivity";
-    private static final int RC_SIGN_IN = 9001;
     
     private ActivitySignInBinding binding;
     private FirebaseAuth firebaseAuth;
-    private GoogleSignInClient googleSignInClient;
     private boolean passwordVisible = false;
 
     @Override
@@ -52,20 +42,6 @@ public class SignInActivity extends AppCompatActivity {
 
         // Initialize Firebase Auth
         firebaseAuth = FirebaseAuth.getInstance();
-        
-        try {
-            // Configure Google Sign In
-            GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                    .requestIdToken(getString(R.string.default_web_client_id))
-                    .requestEmail()
-                    .build();
-            googleSignInClient = GoogleSignIn.getClient(this, gso);
-        } catch (Exception e) {
-            Log.e(TAG, "Error configuring Google Sign In: " + e.getMessage());
-            // Disable Google sign-in button if configuration fails
-            binding.googleSignInButton.setEnabled(false);
-            binding.googleSignInButton.setAlpha(0.5f);
-        }
         
         setupClickListeners();
     }
@@ -92,17 +68,6 @@ public class SignInActivity extends AppCompatActivity {
         binding.signInButton.setOnClickListener(v -> {
             if (validateInputs()) {
                 attemptSignIn();
-            }
-        });
-
-        // Google sign in button click
-        binding.googleSignInButton.setOnClickListener(v -> {
-            Log.d(TAG, "Google sign-in button clicked");
-            if (googleSignInClient != null) {
-                signInWithGoogle();
-            } else {
-                Toast.makeText(this, "Google Sign-In is not configured properly", Toast.LENGTH_LONG).show();
-                Log.e(TAG, "Google Sign-In client is null. Check your configuration.");
             }
         });
 
@@ -200,92 +165,6 @@ public class SignInActivity extends AppCompatActivity {
                 showLoading(false);
             });
     }
-    
-    /**
-     * Starts the Google sign-in process
-     */
-    private void signInWithGoogle() {
-        try {
-            Intent signInIntent = googleSignInClient.getSignInIntent();
-            startActivityForResult(signInIntent, RC_SIGN_IN);
-        } catch (Exception e) {
-            Log.e(TAG, "Error starting Google Sign-In: " + e.getMessage(), e);
-            Toast.makeText(this, "Google Sign-In failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-    }
-    
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        
-        // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
-        if (requestCode == RC_SIGN_IN) {
-            try {
-                Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-                try {
-                    // Google Sign In was successful, authenticate with Firebase
-                    GoogleSignInAccount account = task.getResult(ApiException.class);
-                    Log.d(TAG, "firebaseAuthWithGoogle:" + account.getId());
-                    firebaseAuthWithGoogle(account.getIdToken());
-                } catch (ApiException e) {
-                    // Google Sign In failed
-                    Log.w(TAG, "Google sign in failed", e);
-                    String errorMessage = "Google sign in failed";
-                    
-                    // Get more detailed error message based on status code
-                    switch (e.getStatusCode()) {
-                        case 12500: // SIGN_IN_CANCELLED
-                            errorMessage = "Sign in was cancelled";
-                            break;
-                        case 12501: // SIGN_IN_CURRENTLY_IN_PROGRESS
-                            errorMessage = "Sign in already in progress";
-                            break;
-                        case 12502: // SIGN_IN_FAILED
-                            errorMessage = "Sign in failed - please check your internet connection";
-                            break;
-                        case 7: // NETWORK_ERROR
-                            errorMessage = "Network error - please check your connection";
-                            break;
-                        case 16: // DEVELOPER_ERROR
-                            errorMessage = "Developer configuration error - check Firebase setup";
-                            break;
-                        default:
-                            errorMessage = "Google sign in failed (code: " + e.getStatusCode() + ")";
-                    }
-                    
-                    Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show();
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "Unexpected exception during Google Sign-In: " + e.getMessage(), e);
-                Toast.makeText(this, "Google Sign-In encountered an error", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-    
-    /**
-     * Authenticate with Firebase using the Google ID token
-     */
-    private void firebaseAuthWithGoogle(String idToken) {
-        showLoading(true);
-        
-        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
-        firebaseAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        // Sign in success
-                        Log.d(TAG, "signInWithCredential:success");
-                        FirebaseUser user = firebaseAuth.getCurrentUser();
-                        signInSuccess(user);
-                    } else {
-                        // Sign in failed
-                        Log.w(TAG, "signInWithCredential:failure", task.getException());
-                        Toast.makeText(SignInActivity.this, "Firebase Authentication failed", 
-                                Toast.LENGTH_SHORT).show();
-                    }
-                    
-                    showLoading(false);
-                });
-    }
 
     private void handleSignInError(Exception exception) {
         if (exception instanceof FirebaseAuthInvalidUserException) {
@@ -336,11 +215,9 @@ public class SignInActivity extends AppCompatActivity {
         if (isLoading) {
             binding.signInButton.setEnabled(false);
             binding.signInButton.setText("Signing In...");
-            binding.googleSignInButton.setEnabled(false);
         } else {
             binding.signInButton.setEnabled(true);
             binding.signInButton.setText("LOG IN");
-            binding.googleSignInButton.setEnabled(true);
         }
     }
 } 
