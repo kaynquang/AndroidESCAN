@@ -45,4 +45,17 @@
     <!-- Permissions -->
     <string name="camera_permission_required">Camera permission required for scanning</string>
     <string name="storage_permission_required">Storage permission required to save scans</string>
+
+    <!-- Authentication strings -->
+    <string name="default_web_client_id">798986262916-webexample67890.apps.googleusercontent.com</string>
+    <string name="sign_in_failed">Sign in failed</string>
+    <string name="sign_up_failed">Sign up failed</string>
+    <string name="email_required">Email is required</string>
+    <string name="password_required">Password is required</string>
+    <string name="password_too_short">Password must be at least 6 characters</string>
+    <string name="password_mismatch">Passwords do not match</string>
+    <string name="email_already_in_use">This email is already registered</string>
+    <string name="account_created">Account created successfully</string>
+    <string name="verification_email_sent">Verification email sent</string>
+    <string name="reset_password_email_sent">Password reset email sent</string>
 </resources>

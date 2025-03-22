@@ -41,6 +41,12 @@
             android:exported="false"
             android:screenOrientation="portrait" />
             
+        <!-- Verification Activity -->
+        <activity
+            android:name=".auth.VerificationActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+            
         <!-- Main Activity -->
         <activity
             android:name=".MainActivity"

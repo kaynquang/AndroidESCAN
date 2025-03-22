@@ -132,12 +132,6 @@ public class SettingsFragment extends Fragment {
             showThemeSelectionDialog();
         });
         
-        // Quality setting
-        binding.qualitySetting.setOnClickListener(v -> {
-            Log.d(TAG, "Quality setting clicked");
-            Toast.makeText(requireContext(), "Quality setting clicked", Toast.LENGTH_SHORT).show();
-            // Future: Show quality selection dialog
-        });
         
         // Storage setting
         binding.storageSetting.setOnClickListener(v -> {
@@ -159,6 +153,39 @@ public class SettingsFragment extends Fragment {
             Toast.makeText(requireContext(), "Privacy policy clicked", Toast.LENGTH_SHORT).show();
             // Future: Open privacy policy webpage
         });
+        
+        // Sign out
+        binding.signOutButton.setOnClickListener(v -> {
+            Log.d(TAG, "Sign out clicked");
+            showSignOutConfirmationDialog();
+        });
+    }
+    
+    /**
+     * Show confirmation dialog before signing out
+     */
+    private void showSignOutConfirmationDialog() {
+        new AlertDialog.Builder(requireContext())
+            .setTitle("Sign Out")
+            .setMessage("Are you sure you want to sign out?")
+            .setPositiveButton("Sign Out", (dialog, which) -> {
+                signOut();
+            })
+            .setNegativeButton("Cancel", null)
+            .show();
+    }
+    
+    /**
+     * Sign out the current user and navigate to sign in screen
+     */
+    private void signOut() {
+        firebaseAuth.signOut();
+        Log.d(TAG, "User signed out");
+        Toast.makeText(requireContext(), "Signed out successfully", Toast.LENGTH_SHORT).show();
+        
+        // Navigate to sign in activity
+        requireActivity().finish();
+        startActivity(new android.content.Intent(requireContext(), com.quang.escan.auth.SignInActivity.class));
     }
     
     /**

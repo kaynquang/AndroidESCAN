@@ -4,6 +4,7 @@ import android.app.Application;
 import android.util.Log;
 
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.FirebaseAuth;
 import com.quang.escan.utils.ThemeUtils;
 
 /**
@@ -30,6 +31,8 @@ public class EScanApplication extends Application {
     private void initializeFirebase() {
         try {
             FirebaseApp.initializeApp(this);
+            // Initialize Firebase Auth
+            FirebaseAuth.getInstance();
             Log.d(TAG, "Firebase initialized successfully");
         } catch (Exception e) {
             Log.e(TAG, "Error initializing Firebase: " + e.getMessage(), e);
