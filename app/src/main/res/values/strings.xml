@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">EScan</string>
+    
+    <!-- Common -->
+    <string name="home">Home</string>
+    <string name="scan">Scan</string>
+    <string name="library">Library</string>
+    <string name="settings">Settings</string>
+    
+    <!-- Home Screen -->
+    <string name="recent_scans">Recent Scans</string>
+    <string name="quick_actions">Quick Actions</string>
+    <string name="scan_document">Scan Document</string>
+    <string name="import_image">Import Image</string>
+    
+    <!-- Scan Screen -->
+    <string name="scan_document_title">Scan Document</string>
+    <string name="gallery">Gallery</string>
+    <string name="flash_on">Flash On</string>
+    <string name="flash_off">Flash Off</string>
+    <string name="capture">Capture</string>
+    <string name="change_mode">Change Mode</string>
+    
+    <!-- Library Screen -->
+    <string name="all">All</string>
+    <string name="documents">Documents</string>
+    <string name="images">Images</string>
+    <string name="pdfs">PDFs</string>
+    <string name="search">Search</string>
+    <string name="filter">Filter</string>
+    <string name="no_documents">No documents yet</string>
+    
+    <!-- Settings Screen -->
+    <string name="account">Account</string>
+    <string name="app_settings">App Settings</string>
+    <string name="theme">Theme</string>
+    <string name="scan_quality">Scan Quality</string>
+    <string name="storage_location">Storage Location</string>
+    <string name="about">About</string>
+    <string name="about_escan">About EScan</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="version">Version</string>
+    
+    <!-- Permissions -->
+    <string name="camera_permission_required">Camera permission required for scanning</string>
+    <string name="storage_permission_required">Storage permission required to save scans</string>
+</resources>
