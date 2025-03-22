@@ -8,25 +8,65 @@
     <fragment
         android:id="@+id/navigation_home"
         android:name="com.quang.escan.ui.home.HomeFragment"
-        android:label="Home"
+        android:label="@string/title_home"
         tools:layout="@layout/fragment_home" />
 
     <fragment
         android:id="@+id/navigation_scan"
         android:name="com.quang.escan.ui.scan.ScanFragment"
-        android:label="Scan"
-        tools:layout="@layout/fragment_scan" />
+        android:label="@string/title_scan"
+        tools:layout="@layout/fragment_scan">
+        <action
+            android:id="@+id/action_scan_to_image_edit"
+            app:destination="@id/navigation_image_edit" />
+        <argument
+            android:name="for_text_recognition"
+            app:argType="boolean"
+            android:defaultValue="false" />
+        <argument
+            android:name="feature_type"
+            app:argType="integer"
+            android:defaultValue="-1" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_image_edit"
+        android:name="com.quang.escan.ui.scan.ImageEditFragment"
+        android:label="Edit Image"
+        tools:layout="@layout/fragment_image_edit">
+        <argument
+            android:name="imagePath"
+            app:argType="string" />
+        <argument
+            android:name="for_text_recognition"
+            app:argType="boolean"
+            android:defaultValue="false" />
+        <argument
+            android:name="feature_type"
+            app:argType="integer"
+            android:defaultValue="-1" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_library"
         android:name="com.quang.escan.ui.library.LibraryFragment"
-        android:label="Library"
+        android:label="@string/title_library"
         tools:layout="@layout/fragment_library" />
 
     <fragment
         android:id="@+id/navigation_settings"
         android:name="com.quang.escan.ui.settings.SettingsFragment"
-        android:label="Settings"
+        android:label="@string/title_settings"
         tools:layout="@layout/fragment_settings" />
+        
+    <fragment
+        android:id="@+id/navigation_document_viewer"
+        android:name="com.quang.escan.ui.library.DocumentViewerFragment"
+        android:label="Document Details"
+        tools:layout="@layout/fragment_document_viewer">
+        <argument
+            android:name="document_id"
+            app:argType="long" />
+    </fragment>
 
 </navigation> 

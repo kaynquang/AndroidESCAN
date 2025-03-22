@@ -47,6 +47,18 @@
             android:exported="false"
             android:screenOrientation="portrait" />
             
+        <!-- Text Recognition Activity -->
+        <activity
+            android:name=".ui.ocr.TextRecognitionActivity"
+            android:exported="false"
+            android:theme="@style/Theme.EScan" />
+            
+        <!-- Save Extracted Text Activity -->
+        <activity
+            android:name=".ui.ocr.SaveExtractedTextActivity"
+            android:exported="false"
+            android:theme="@style/Theme.EScan" />
+            
         <!-- Main Activity -->
         <activity
             android:name=".MainActivity"

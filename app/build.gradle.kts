@@ -66,6 +66,16 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation("com.google.firebase:firebase-analytics:22.3.0")
 
+    // ML Kit Text Recognition
+    implementation("com.google.mlkit:text-recognition:16.0.1") // Latin
+    implementation("com.google.mlkit:text-recognition-chinese:16.0.1") // Chinese
+    implementation("com.google.mlkit:text-recognition-devanagari:16.0.1") // Devanagari
+    implementation("com.google.mlkit:text-recognition-japanese:16.0.1") // Japanese
+    implementation("com.google.mlkit:text-recognition-korean:16.0.1") // Korean
+
+    // ML Kit for digital ink recognition (handwriting)
+    implementation("com.google.mlkit:digital-ink-recognition:18.1.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

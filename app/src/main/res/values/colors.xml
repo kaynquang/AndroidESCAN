@@ -35,4 +35,7 @@
     
     <!-- Feature button colors -->
     <color name="feature_button_bg">#FFF9F5</color>
+    
+    <!-- UI element colors -->
+    <color name="divider">#E0E0E0</color>
 </resources>

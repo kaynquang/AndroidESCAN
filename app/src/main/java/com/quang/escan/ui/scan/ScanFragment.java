@@ -2,7 +2,9 @@ package com.quang.escan.ui.scan;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,6 +21,7 @@ import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.navigation.Navigation;
@@ -28,7 +31,9 @@ import com.quang.escan.R;
 import com.quang.escan.databinding.FragmentScanBinding;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -47,6 +52,10 @@ public class ScanFragment extends Fragment {
     private static final int REQUEST_CODE_PERMISSIONS = 10;
     private static final String[] REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA};
     private boolean flashEnabled = false;
+    private boolean autoMode = true; // Default to auto mode
+    private boolean forTextRecognition = false;
+    private int featureType = -1;
+    private String currentPhotoPath;
 
     @Nullable
     @Override
@@ -79,6 +88,19 @@ public class ScanFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        
+        // Extract arguments
+        if (getArguments() != null) {
+            forTextRecognition = getArguments().getBoolean("for_text_recognition", false);
+            featureType = getArguments().getInt("feature_type", -1);
+            Log.d(TAG, "Arguments: forTextRecognition=" + forTextRecognition + 
+                       ", featureType=" + featureType);
+        }
+    }
+
     /**
      * Set up all UI interaction listeners
      */
@@ -92,16 +114,26 @@ public class ScanFragment extends Fragment {
                 takePhoto();
             });
 
-            // Gallery button
-            binding.btnGallery.setOnClickListener(v -> {
-                Log.d(TAG, "Gallery button clicked");
-                Toast.makeText(requireContext(), "Gallery feature coming soon", Toast.LENGTH_SHORT).show();
-            });
-
-            // Scan mode button
+            // Mode button - toggle between auto and manual
             binding.btnMode.setOnClickListener(v -> {
-                Log.d(TAG, "Mode button clicked");
-                Toast.makeText(requireContext(), "Scan mode changed", Toast.LENGTH_SHORT).show();
+                autoMode = !autoMode;
+                Log.d(TAG, "Mode button clicked, autoMode: " + autoMode);
+                
+                // Update UI based on mode
+                if (autoMode) {
+                    binding.btnMode.setImageResource(android.R.drawable.ic_menu_camera);
+                    binding.btnMode.setContentDescription("Auto Mode");
+                    Toast.makeText(requireContext(), "Auto mode: Automatic edge detection", 
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    binding.btnMode.setImageResource(android.R.drawable.ic_menu_edit);
+                    binding.btnMode.setContentDescription("Manual Mode");
+                    Toast.makeText(requireContext(), "Manual mode: Manual edge adjustment", 
+                            Toast.LENGTH_SHORT).show();
+                }
+                
+                // Here you would add logic to update the camera preview/processing
+                // based on the selected mode
             });
             
             // Back navigation
@@ -125,60 +157,83 @@ public class ScanFragment extends Fragment {
     }
 
     /**
+     * Check if this fragment was launched for text recognition
+     */
+    private boolean isForTextRecognition() {
+        Bundle args = getArguments();
+        return args != null && args.getBoolean("for_text_recognition", false);
+    }
+
+    /**
+     * Check if this fragment was launched for ink/handwriting recognition
+     */
+    private boolean isForInkRecognition() {
+        Bundle args = getArguments();
+        return args != null && args.getBoolean("for_ink_recognition", false);
+    }
+
+    /**
      * Capture a photo using CameraX
      */
     private void takePhoto() {
-        if (imageCapture == null) {
-            Log.e(TAG, "Cannot take photo, imageCapture is null");
-            Toast.makeText(requireContext(), "Camera not initialized", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
+        File photoFile = createImageFile();
+        currentPhotoPath = photoFile.getAbsolutePath();
+        
         try {
-            // Create timestamped file
-            String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
-                    .format(System.currentTimeMillis());
-            String fileName = "SCAN_" + timestamp + ".jpg";
-            File photoFile = new File(requireContext().getExternalFilesDir(null), fileName);
-            Log.d(TAG, "Photo will be saved to: " + photoFile.getAbsolutePath());
-
-            // Create output options object
-            ImageCapture.OutputFileOptions outputOptions =
-                    new ImageCapture.OutputFileOptions.Builder(photoFile).build();
-
-            // Capture the image
+            // Get URI for the created file
+            Uri photoURI = FileProvider.getUriForFile(
+                    requireContext(),
+                    "com.quang.escan.fileprovider",
+                    photoFile);
+            
+            // Take the picture
             imageCapture.takePicture(
-                    outputOptions,
+                    new ImageCapture.OutputFileOptions.Builder(photoFile).build(),
                     ContextCompat.getMainExecutor(requireContext()),
                     new ImageCapture.OnImageSavedCallback() {
                         @Override
                         public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
-                            if (getContext() != null) {
-                                Log.d(TAG, "Photo capture succeeded");
-                                Toast.makeText(requireContext(), 
-                                        "Photo saved: " + photoFile.getName(), 
-                                        Toast.LENGTH_SHORT).show();
-                                
-                                // Future: Navigate to edit/preview fragment with captured image
-                            }
+                            Log.d(TAG, "Image saved successfully: " + currentPhotoPath);
+                            
+                            // Navigate to image edit screen with the image path and feature flag
+                            Bundle args = new Bundle();
+                            args.putString("imagePath", currentPhotoPath);
+                            args.putBoolean("for_text_recognition", forTextRecognition);
+                            args.putInt("feature_type", featureType);
+                            
+                            // Navigate to image edit screen
+                            Navigation.findNavController(requireView()).navigate(R.id.action_scan_to_image_edit, args);
                         }
-
+                        
                         @Override
                         public void onError(@NonNull ImageCaptureException exception) {
-                            if (getContext() != null) {
-                                Log.e(TAG, "Photo capture failed", exception);
-                                Toast.makeText(requireContext(), 
-                                        "Photo capture failed: " + exception.getMessage(), 
-                                        Toast.LENGTH_SHORT).show();
-                            }
+                            Log.e(TAG, "Error capturing image", exception);
+                            Toast.makeText(requireContext(), 
+                                    "Error taking photo: " + exception.getMessage(),
+                                    Toast.LENGTH_SHORT).show();
                         }
                     });
         } catch (Exception e) {
             Log.e(TAG, "Error taking photo", e);
-            if (getContext() != null) {
-                Toast.makeText(requireContext(), 
-                        "Error taking photo: " + e.getMessage(), 
-                        Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), 
+                    "Error taking photo: " + e.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Launch TextRecognitionActivity with the captured image
+     */
+    private void launchTextRecognition(File photoFile) {
+        if (getContext() != null) {
+            try {
+                android.net.Uri imageUri = android.net.Uri.fromFile(photoFile);
+                Intent intent = new Intent(requireContext(), com.quang.escan.ui.ocr.TextRecognitionActivity.class);
+                intent.putExtra(com.quang.escan.ui.ocr.TextRecognitionActivity.EXTRA_IMAGE_URI, imageUri.toString());
+                startActivity(intent);
+            } catch (Exception e) {
+                Log.e(TAG, "Error launching text recognition", e);
+                showToast("Error launching text recognition: " + e.getMessage());
             }
         }
     }
@@ -312,6 +367,29 @@ public class ScanFragment extends Fragment {
         if (allPermissionsGranted() && imageCapture == null) {
             Log.d(TAG, "Starting camera on resume");
             startCamera();
+        }
+    }
+
+    /**
+     * Create a temporary file to store the image
+     */
+    private File createImageFile() {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        String imageFileName = "SCAN_" + timeStamp + "_";
+        File storageDir = requireContext().getExternalFilesDir(null);
+        
+        try {
+            File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+            );
+            return image;
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to create image file", e);
+            // If file creation fails, use a fallback approach
+            return new File(storageDir, imageFileName + ".jpg");
         }
     }
 }
