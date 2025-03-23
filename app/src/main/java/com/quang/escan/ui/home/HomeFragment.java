@@ -165,6 +165,13 @@ public class HomeFragment extends Fragment implements
             // Navigate directly to dedicated QR scan fragment
             navController.navigate(R.id.navigation_qr_scan);
         });
+        
+        // Translate feature
+        binding.featureTranslate.setOnClickListener(v -> {
+            Log.d(TAG, "Translate button clicked");
+            // Navigate directly to the translation fragment
+            navController.navigate(R.id.navigation_translate);
+        });
     }
 
     /**

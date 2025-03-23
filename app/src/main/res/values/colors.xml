@@ -9,6 +9,7 @@
     <color name="primary_light">#D2E3FC</color>
     <color name="secondary">#7BAAF7</color>
     <color name="secondary_variant">#5D96F5</color>
+    <color name="colorPrimary">#4285F4</color>
     
     <!-- Background colors -->
     <color name="background">#FFFFFF</color>

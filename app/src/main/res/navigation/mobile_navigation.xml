@@ -74,5 +74,11 @@
         android:name="com.quang.escan.ui.qr.QrScanFragment"
         android:label="Scan QR Code"
         tools:layout="@layout/fragment_qr_scan" />
+        
+    <fragment
+        android:id="@+id/navigation_translate"
+        android:name="com.quang.escan.ui.translate.TranslateFragment"
+        android:label="Translate"
+        tools:layout="@layout/fragment_translate" />
 
 </navigation> 

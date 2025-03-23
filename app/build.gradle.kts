@@ -78,6 +78,9 @@ dependencies {
     
     // ML Kit Barcode scanning
     implementation("com.google.mlkit:barcode-scanning:17.2.0")
+    
+    // ML Kit Translation
+    implementation("com.google.mlkit:translate:17.0.3")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
