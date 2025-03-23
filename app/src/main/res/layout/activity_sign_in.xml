@@ -176,13 +176,13 @@
             android:textColor="@color/text_secondary"
             android:textSize="14sp" />
 
-        <TextView
-            android:id="@+id/sign_up_link"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Sign Up"
-            android:textColor="@color/primary"
-            android:textSize="14sp"
+    <TextView
+        android:id="@+id/sign_up_link"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sign Up"
+        android:textColor="@color/primary"
+        android:textSize="14sp"
             android:textStyle="bold" />
     </LinearLayout>
 

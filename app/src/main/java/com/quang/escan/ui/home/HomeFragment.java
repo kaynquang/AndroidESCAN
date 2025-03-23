@@ -24,7 +24,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.quang.escan.R;
 import com.quang.escan.databinding.FragmentHomeBinding;
 import com.quang.escan.ui.scan.ImageSourceDialogFragment;
-import com.quang.escan.ui.scan.PdfSourceDialogFragment;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,19 +35,14 @@ import java.util.Locale;
  * Home screen fragment - the main landing page of the application
  */
 public class HomeFragment extends Fragment implements 
-        ImageSourceDialogFragment.ImageSourceListener, 
-        PdfSourceDialogFragment.PdfSourceListener {
+        ImageSourceDialogFragment.ImageSourceListener {
 
     private static final String TAG = "HomeFragment";
     private static final int REQUEST_IMAGE_PICK = 1;
-    private static final int REQUEST_FILE_PICK = 2;
     
     private FragmentHomeBinding binding;
     private NavController navController;
     private RecentFilesAdapter recentFilesAdapter;
-    
-    // Activity result launcher for file picking
-    private ActivityResultLauncher<String[]> filePickerLauncher;
     
     /**
      * Track which feature button was last clicked
@@ -57,18 +51,7 @@ public class HomeFragment extends Fragment implements
     private static final int FEATURE_EXTRACT_TEXT = 0;
     private static final int FEATURE_EXTRACT_HANDWRITING = 1;
     private static final int FEATURE_WATERMARK = 2;
-    private static final int FEATURE_PDF_CONVERT = 3;
-    private static final int FEATURE_QR_SCAN = 4;
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        
-        // Initialize file picker launcher
-        filePickerLauncher = registerForActivityResult(
-                new ActivityResultContracts.OpenDocument(),
-                this::handleSelectedFile);
-    }
+    private static final int FEATURE_QR_SCAN = 3;
 
     @Nullable
     @Override
@@ -151,26 +134,12 @@ public class HomeFragment extends Fragment implements
             Toast.makeText(requireContext(), "Watermark feature coming soon", Toast.LENGTH_SHORT).show();
         });
         
-        // PDF Convert feature
-        binding.featurePdfConvert.setOnClickListener(v -> {
-            Log.d(TAG, "PDF Convert button clicked");
-            lastClickedFeature = FEATURE_PDF_CONVERT;
-            showPdfSourceDialog();
-        });
-        
         // QR Scan feature
         binding.featureQrScan.setOnClickListener(v -> {
             Log.d(TAG, "QR Scan button clicked");
             lastClickedFeature = FEATURE_QR_SCAN;
             // Navigate directly to dedicated QR scan fragment
             navController.navigate(R.id.navigation_qr_scan);
-        });
-        
-        // Translate feature
-        binding.featureTranslate.setOnClickListener(v -> {
-            Log.d(TAG, "Translate button clicked");
-            // Navigate directly to the translation fragment
-            navController.navigate(R.id.navigation_translate);
         });
     }
 
@@ -184,53 +153,11 @@ public class HomeFragment extends Fragment implements
     }
     
     /**
-     * Shows the PDF source selection dialog with file option
-     */
-    private void showPdfSourceDialog() {
-        PdfSourceDialogFragment dialog = PdfSourceDialogFragment.newInstance();
-        dialog.setPdfSourceListener(this);
-        dialog.show(getChildFragmentManager(), "PdfSourceDialog");
-    }
-    
-    /**
      * Opens the gallery for image selection
      */
     private void openGallery() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, REQUEST_IMAGE_PICK);
-    }
-    
-    /**
-     * Opens the file picker for PDF selection
-     */
-    private void openFilePicker() {
-        try {
-            filePickerLauncher.launch(new String[]{"application/pdf"});
-        } catch (Exception e) {
-            Log.e(TAG, "Error opening file picker", e);
-            Toast.makeText(requireContext(), "Error opening file picker", Toast.LENGTH_SHORT).show();
-        }
-    }
-    
-    /**
-     * Handles the result of file selection
-     */
-    private void handleSelectedFile(Uri uri) {
-        if (uri != null) {
-            Log.d(TAG, "File selected: " + uri);
-            Toast.makeText(requireContext(), "File selected: " + uri.getLastPathSegment(), 
-                    Toast.LENGTH_SHORT).show();
-            // Process the selected PDF file
-            processPdfFile(uri);
-        }
-    }
-    
-    /**
-     * Process the selected PDF file
-     */
-    private void processPdfFile(Uri uri) {
-        // Future implementation: Process the PDF file
-        Toast.makeText(requireContext(), "Processing PDF file...", Toast.LENGTH_SHORT).show();
     }
     
     /**
@@ -266,12 +193,6 @@ public class HomeFragment extends Fragment implements
     public void onGallerySelected() {
         Log.d(TAG, "Gallery option selected");
         openGallery();
-    }
-    
-    @Override
-    public void onFileSelected() {
-        Log.d(TAG, "File option selected from dialog");
-        openFilePicker();
     }
 
     /**

@@ -96,7 +96,4 @@
     <string name="text_recognition_title">Text Recognition</string>
     <string name="save_extracted_text">Save Extracted Text</string>
     <string name="no_text_detected">No text detected</string>
-
-    <!-- New string resource -->
-    <string name="select_document">Select Document</string>
 </resources>

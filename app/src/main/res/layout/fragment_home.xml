@@ -176,50 +176,7 @@
                     android:textSize="14sp" />
             </LinearLayout>
 
-            <!-- PDF Convert -->
-            <LinearLayout
-                android:id="@+id/feature_pdf_convert"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:clickable="true"
-                android:focusable="true"
-                android:background="?attr/selectableItemBackground">
-
-                <FrameLayout
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:background="@drawable/feature_button_background">
-
-                    <ImageView
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_pdf_convert"
-                        android:contentDescription="PDF Convert" />
-                </FrameLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="PDF Convert"
-                    android:textColor="@color/text_primary"
-                    android:textSize="14sp" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- Second row of features -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_marginTop="24dp">
-
-            <!-- QR Scan -->
+            <!-- QR Scan moved to replace PDF Convert -->
             <LinearLayout
                 android:id="@+id/feature_qr_scan"
                 android:layout_width="0dp"
@@ -252,6 +209,15 @@
                     android:textColor="@color/text_primary"
                     android:textSize="14sp" />
             </LinearLayout>
+        </LinearLayout>
+
+        <!-- Second row of features -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="24dp">
 
             <!-- Translate -->
             <LinearLayout

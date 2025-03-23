@@ -26,18 +26,4 @@
         <item name="itemIconTint">@color/primary</item>
         <item name="itemTextColor">@color/text_primary</item>
     </style>
-    
-    <!-- Full screen dialog theme -->
-    <style name="Theme_ESCAN_FullScreenDialog" parent="Theme.MaterialComponents.DayNight.Dialog">
-        <item name="android:windowIsFloating">false</item>
-        <item name="android:windowBackground">@color/background</item>
-        <item name="android:windowSoftInputMode">adjustResize</item>
-        <item name="android:statusBarColor">@color/primary</item>
-        <item name="android:navigationBarColor">@color/background</item>
-        <item name="toolbarStyle">@style/Widget.MaterialComponents.Toolbar.Primary</item>
-        <item name="actionBarStyle">@style/Widget.MaterialComponents.ActionBar.Primary</item>
-        <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryVariant">@color/primary_variant</item>
-        <item name="colorOnPrimary">@color/white</item>
-    </style>
 </resources> 
