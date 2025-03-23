@@ -147,13 +147,6 @@ public class SettingsFragment extends Fragment {
             // Future: Show about dialog
         });
         
-        // Privacy policy
-        binding.privacySetting.setOnClickListener(v -> {
-            Log.d(TAG, "Privacy policy clicked");
-            Toast.makeText(requireContext(), "Privacy policy clicked", Toast.LENGTH_SHORT).show();
-            // Future: Open privacy policy webpage
-        });
-        
         // Sign out
         binding.signOutButton.setOnClickListener(v -> {
             Log.d(TAG, "Sign out clicked");
