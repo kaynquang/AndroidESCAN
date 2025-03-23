@@ -18,6 +18,11 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.google.mlkit.vision.barcode.BarcodeScanner;
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
+import com.google.mlkit.vision.barcode.BarcodeScanning;
+import com.google.mlkit.vision.barcode.common.Barcode;
+import com.google.mlkit.vision.common.InputImage;
 import com.quang.escan.R;
 import com.quang.escan.databinding.FragmentImageEditBinding;
 
@@ -33,6 +38,7 @@ public class ImageEditFragment extends Fragment {
     private static final String TAG = "ImageEditFragment";
     private static final String ARG_IMAGE_PATH = "imagePath";
     private static final String ARG_FOR_TEXT_RECOGNITION = "for_text_recognition";
+    private static final String ARG_FOR_QR_SCAN = "for_qr_scan";
     private static final String ARG_FEATURE_TYPE = "feature_type";
     
     private FragmentImageEditBinding binding;
@@ -42,6 +48,7 @@ public class ImageEditFragment extends Fragment {
     private Bitmap currentBitmap;
     private int rotationDegrees = 0;
     private boolean isForTextRecognition = false;
+    private boolean isForQrScan = false;
     private int featureType = -1;
 
     /**
@@ -63,9 +70,11 @@ public class ImageEditFragment extends Fragment {
         if (getArguments() != null) {
             imagePath = getArguments().getString(ARG_IMAGE_PATH);
             isForTextRecognition = getArguments().getBoolean(ARG_FOR_TEXT_RECOGNITION, false);
+            isForQrScan = getArguments().getBoolean(ARG_FOR_QR_SCAN, false);
             featureType = getArguments().getInt(ARG_FEATURE_TYPE, -1);
             Log.d(TAG, "Received image path: " + imagePath + 
                        ", forTextRecognition: " + isForTextRecognition + 
+                       ", forQrScan: " + isForQrScan +
                        ", featureType: " + featureType);
         }
     }
@@ -94,12 +103,18 @@ public class ImageEditFragment extends Fragment {
         if (args != null) {
             imagePath = args.getString("imagePath");
             isForTextRecognition = args.getBoolean("for_text_recognition", false);
+            isForQrScan = args.getBoolean("for_qr_scan", false);
             featureType = args.getInt("feature_type", -1);
         }
         
         // Load and display the image
         if (imagePath != null) {
             loadImage();
+            
+            // If this is for QR scanning, scan the image immediately
+            if (isForQrScan && originalBitmap != null) {
+                scanQrCode(originalBitmap);
+            }
         } else {
             showToast("No image provided");
             navigateUp();
@@ -186,6 +201,13 @@ public class ImageEditFragment extends Fragment {
             if (isForTextRecognition) {
                 // For both text and handwriting, use TextRecognitionActivity
                 launchTextRecognition();
+            } else if (isForQrScan) {
+                // For QR code scanning
+                if (currentBitmap != null) {
+                    scanQrCode(currentBitmap);
+                } else {
+                    showToast("Cannot process image");
+                }
             } else {
                 // Handle normal flow
                 showToast("Image processed successfully");
@@ -254,6 +276,75 @@ public class ImageEditFragment extends Fragment {
         } catch (Exception e) {
             Log.e(TAG, "Error launching recognition", e);
             showToast("Error launching recognition: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Scan QR code from bitmap
+     */
+    private void scanQrCode(Bitmap bitmap) {
+        if (bitmap == null) {
+            showToast("Failed to load image for QR scanning");
+            return;
+        }
+        
+        // Show loading state
+        binding.btnNext.setEnabled(false);
+        showToast("Scanning for QR codes...");
+        
+        try {
+            // Create barcode scanner
+            BarcodeScannerOptions options = new BarcodeScannerOptions.Builder()
+                    .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+                    .build();
+            BarcodeScanner scanner = BarcodeScanning.getClient(options);
+            
+            // Create input image from bitmap
+            InputImage image = InputImage.fromBitmap(bitmap, 0);
+            
+            // Process the image
+            scanner.process(image)
+                    .addOnSuccessListener(barcodes -> {
+                        if (barcodes.size() > 0) {
+                            Barcode barcode = barcodes.get(0);
+                            String qrValue = barcode.getRawValue();
+                            Log.d(TAG, "QR code detected: " + qrValue);
+                            
+                            // Launch QR result activity
+                            launchQrResultActivity(qrValue);
+                        } else {
+                            showToast("No QR code found in the image");
+                            binding.btnNext.setEnabled(true);
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Error detecting QR code", e);
+                        showToast("Error scanning QR code: " + e.getMessage());
+                        binding.btnNext.setEnabled(true);
+                    });
+        } catch (Exception e) {
+            Log.e(TAG, "Error setting up QR scanner", e);
+            showToast("Error setting up QR scanner: " + e.getMessage());
+            binding.btnNext.setEnabled(true);
+        }
+    }
+    
+    /**
+     * Launch QR result activity with the detected QR code value
+     */
+    private void launchQrResultActivity(String qrValue) {
+        try {
+            if (getActivity() != null) {
+                Intent intent = new Intent(requireContext(), com.quang.escan.ui.qr.QrResultActivity.class);
+                intent.putExtra(com.quang.escan.ui.qr.QrResultActivity.EXTRA_QR_VALUE, qrValue);
+                startActivity(intent);
+                
+                // Go back to home after launching the result activity
+                navigateUp();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error launching QR result activity", e);
+            showToast("Error: " + e.getMessage());
         }
     }
 

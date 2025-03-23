@@ -75,6 +75,9 @@ dependencies {
 
     // ML Kit for digital ink recognition (handwriting)
     implementation("com.google.mlkit:digital-ink-recognition:18.1.0")
+    
+    // ML Kit Barcode scanning
+    implementation("com.google.mlkit:barcode-scanning:17.2.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

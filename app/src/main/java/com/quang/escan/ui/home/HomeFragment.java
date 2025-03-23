@@ -58,6 +58,7 @@ public class HomeFragment extends Fragment implements
     private static final int FEATURE_EXTRACT_HANDWRITING = 1;
     private static final int FEATURE_WATERMARK = 2;
     private static final int FEATURE_PDF_CONVERT = 3;
+    private static final int FEATURE_QR_SCAN = 4;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -156,6 +157,14 @@ public class HomeFragment extends Fragment implements
             lastClickedFeature = FEATURE_PDF_CONVERT;
             showPdfSourceDialog();
         });
+        
+        // QR Scan feature
+        binding.featureQrScan.setOnClickListener(v -> {
+            Log.d(TAG, "QR Scan button clicked");
+            lastClickedFeature = FEATURE_QR_SCAN;
+            // Navigate directly to dedicated QR scan fragment
+            navController.navigate(R.id.navigation_qr_scan);
+        });
     }
 
     /**
@@ -226,6 +235,12 @@ public class HomeFragment extends Fragment implements
         
         // Navigate to scan fragment with appropriate flag
         Bundle args = new Bundle();
+        
+        if (lastClickedFeature == FEATURE_QR_SCAN) {
+            // For QR scanning, use dedicated fragment
+            navController.navigate(R.id.navigation_qr_scan);
+            return;
+        }
         
         // For both text and handwriting recognition, use for_text_recognition flag
         if (lastClickedFeature == FEATURE_EXTRACT_TEXT || lastClickedFeature == FEATURE_EXTRACT_HANDWRITING) {
@@ -299,6 +314,16 @@ public class HomeFragment extends Fragment implements
                         args.putBoolean("for_text_recognition", true);
                         // Store the feature type to distinguish between text and handwriting later
                         args.putInt("feature_type", lastClickedFeature);
+                    }
+                    // For QR scan
+                    else if (lastClickedFeature == FEATURE_QR_SCAN) {
+                        // For QR scan, we'll use the path to create a File in the QrScanFragment
+                        // and process it directly
+                        String imagePath = getPathFromUri(selectedImageUri);
+                        Bundle qrArgs = new Bundle();
+                        qrArgs.putString("image_uri", selectedImageUri.toString());
+                        navController.navigate(R.id.navigation_qr_scan, qrArgs);
+                        return;
                     }
                     
                     Log.d(TAG, "Navigating to image edit with args: " + args);

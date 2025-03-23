@@ -24,6 +24,17 @@
         android:theme="@style/Theme.EScan"
         tools:targetApi="31">
         
+        <!-- File Provider for camera photos -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.quang.escan.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+        
         <!-- Sign In Activity - Launcher -->
         <activity
             android:name=".auth.SignInActivity"
@@ -56,6 +67,12 @@
         <!-- Save Extracted Text Activity -->
         <activity
             android:name=".ui.ocr.SaveExtractedTextActivity"
+            android:exported="false"
+            android:theme="@style/Theme.EScan" />
+            
+        <!-- QR Result Activity -->
+        <activity
+            android:name=".ui.qr.QrResultActivity"
             android:exported="false"
             android:theme="@style/Theme.EScan" />
             

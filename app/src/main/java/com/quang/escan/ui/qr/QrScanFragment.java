@@ -1,4 +1,4 @@
-package com.quang.escan.ui.scan;
+package com.quang.escan.ui.qr;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -36,7 +36,7 @@ import com.google.mlkit.vision.barcode.BarcodeScanning;
 import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.common.InputImage;
 import com.quang.escan.R;
-import com.quang.escan.databinding.FragmentScanBinding;
+import com.quang.escan.databinding.FragmentQrScanBinding;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,45 +48,66 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Fragment for the document scanning functionality
- * Handles camera preview, photo capture, and scan options
+ * Fragment dedicated to QR code scanning
  */
-public class ScanFragment extends Fragment {
+public class QrScanFragment extends Fragment {
 
-    private static final String TAG = "ScanFragment";
-    private FragmentScanBinding binding;
+    private static final String TAG = "QrScanFragment";
+    private FragmentQrScanBinding binding;
     private ImageCapture imageCapture;
+    private ImageAnalysis imageAnalysis;
     private ExecutorService cameraExecutor;
+    private BarcodeScanner barcodeScanner;
+    private boolean flashEnabled = false;
+    private String currentPhotoPath;
+    
     private static final int REQUEST_CODE_PERMISSIONS = 10;
     private static final String[] REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA};
-    private boolean flashEnabled = false;
-    private boolean forTextRecognition = false;
-    private boolean forQrScan = false;
-    private int featureType = -1;
-    private String currentPhotoPath;
-    private BarcodeScanner barcodeScanner;
-    private ImageAnalysis imageAnalysis;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, 
-                            @Nullable Bundle savedInstanceState) {
-        Log.d(TAG, "onCreateView: Creating scan fragment view");
-        binding = FragmentScanBinding.inflate(inflater, container, false);
+                           @Nullable Bundle savedInstanceState) {
+        binding = FragmentQrScanBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Log.d(TAG, "onViewCreated: Setting up scan fragment");
-
+        Log.d(TAG, "Setting up QR scan fragment");
+        
+        // Initialize barcode scanner
+        BarcodeScannerOptions options = new BarcodeScannerOptions.Builder()
+                .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+                .build();
+        barcodeScanner = BarcodeScanning.getClient(options);
+        
         // Initialize camera executor
         cameraExecutor = Executors.newSingleThreadExecutor();
-
-        // Set up UI interactions
+        
+        // Check if we received an image from gallery
+        Bundle args = getArguments();
+        if (args != null && args.containsKey("image_uri")) {
+            String imageUriString = args.getString("image_uri");
+            if (imageUriString != null && !imageUriString.isEmpty()) {
+                try {
+                    Uri imageUri = Uri.parse(imageUriString);
+                    // Process the image directly
+                    processImageUriForQrCode(imageUri);
+                    return;
+                } catch (Exception e) {
+                    Log.e(TAG, "Error processing image URI", e);
+                    Toast.makeText(requireContext(), 
+                            "Error processing image: " + e.getMessage(), 
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+        
+        // Set up click listeners
         setupClickListeners();
-
+        
         // Request camera permissions and start camera
         if (allPermissionsGranted()) {
             Log.d(TAG, "Permissions already granted, starting camera");
@@ -97,47 +118,16 @@ public class ScanFragment extends Fragment {
                     requireActivity(), REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
         }
     }
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        
-        // Extract arguments
-        if (getArguments() != null) {
-            forTextRecognition = getArguments().getBoolean("for_text_recognition", false);
-            forQrScan = getArguments().getBoolean("for_qr_scan", false);
-            featureType = getArguments().getInt("feature_type", -1);
-            Log.d(TAG, "Arguments: forTextRecognition=" + forTextRecognition + 
-                       ", forQrScan=" + forQrScan +
-                       ", featureType=" + featureType);
-        }
-        
-        // Initialize barcode scanner if needed
-        if (forQrScan) {
-            BarcodeScannerOptions options = new BarcodeScannerOptions.Builder()
-                    .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
-                    .build();
-            barcodeScanner = BarcodeScanning.getClient(options);
-        }
-    }
-
+    
     /**
-     * Set up all UI interaction listeners
+     * Set up UI interaction listeners
      */
     private void setupClickListeners() {
         try {
-            Log.d(TAG, "Setting up click listeners");
-            
-            // Capture button
+            // Capture button - take photo
             binding.btnCapture.setOnClickListener(v -> {
                 Log.d(TAG, "Capture button clicked");
                 takePhoto();
-            });
-
-            // Back navigation
-            binding.toolbar.setNavigationOnClickListener(v -> {
-                Log.d(TAG, "Navigation back clicked");
-                Navigation.findNavController(requireView()).navigateUp();
             });
             
             // Flash toggle
@@ -147,32 +137,21 @@ public class ScanFragment extends Fragment {
                 Toast.makeText(requireContext(), 
                         flashEnabled ? "Flash enabled" : "Flash disabled", 
                         Toast.LENGTH_SHORT).show();
-
                 // Flash implementation would be here
+            });
+            
+            // Back navigation
+            binding.toolbar.setNavigationOnClickListener(v -> {
+                Log.d(TAG, "Navigation back clicked");
+                Navigation.findNavController(requireView()).navigateUp();
             });
         } catch (Exception e) {
             Log.e(TAG, "Error setting up click listeners", e);
         }
     }
-
+    
     /**
-     * Check if this fragment was launched for text recognition
-     */
-    private boolean isForTextRecognition() {
-        Bundle args = getArguments();
-        return args != null && args.getBoolean("for_text_recognition", false);
-    }
-
-    /**
-     * Check if this fragment was launched for ink/handwriting recognition
-     */
-    private boolean isForInkRecognition() {
-        Bundle args = getArguments();
-        return args != null && args.getBoolean("for_ink_recognition", false);
-    }
-
-    /**
-     * Capture a photo using CameraX
+     * Capture a photo for QR scanning
      */
     private void takePhoto() {
         File photoFile = createImageFile();
@@ -193,20 +172,8 @@ public class ScanFragment extends Fragment {
                         @Override
                         public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
                             Log.d(TAG, "Image saved successfully: " + currentPhotoPath);
-                            
-                            if (forQrScan) {
-                                // If in QR scan mode, process the image directly for QR codes
-                                processImageFileForQrCode(photoFile);
-                            } else {
-                                // For regular document scanning, navigate to image edit screen
-                                Bundle args = new Bundle();
-                                args.putString("imagePath", currentPhotoPath);
-                                args.putBoolean("for_text_recognition", forTextRecognition);
-                                args.putInt("feature_type", featureType);
-                                
-                                // Navigate to image edit screen
-                                Navigation.findNavController(requireView()).navigate(R.id.action_scan_to_image_edit, args);
-                            }
+                            // Process the captured image for QR code
+                            processImageFileForQrCode(photoFile);
                         }
                         
                         @Override
@@ -224,24 +191,60 @@ public class ScanFragment extends Fragment {
                     Toast.LENGTH_SHORT).show();
         }
     }
-
+    
     /**
-     * Launch TextRecognitionActivity with the captured image
+     * Process image file for QR code detection
      */
-    private void launchTextRecognition(File photoFile) {
-        if (getContext() != null) {
-            try {
-                android.net.Uri imageUri = android.net.Uri.fromFile(photoFile);
-                Intent intent = new Intent(requireContext(), com.quang.escan.ui.ocr.TextRecognitionActivity.class);
-                intent.putExtra(com.quang.escan.ui.ocr.TextRecognitionActivity.EXTRA_IMAGE_URI, imageUri.toString());
-                startActivity(intent);
-            } catch (Exception e) {
-                Log.e(TAG, "Error launching text recognition", e);
-                showToast("Error launching text recognition: " + e.getMessage());
-            }
+    private void processImageFileForQrCode(File imageFile) {
+        try {
+            InputImage inputImage = InputImage.fromFilePath(requireContext(), Uri.fromFile(imageFile));
+            
+            barcodeScanner.process(inputImage)
+                    .addOnSuccessListener(barcodes -> {
+                        if (barcodes.size() > 0) {
+                            Barcode barcode = barcodes.get(0);
+                            String qrValue = barcode.getRawValue();
+                            Log.d(TAG, "QR code detected in image: " + qrValue);
+                            
+                            // Launch QR result activity
+                            launchQrResultActivity(qrValue);
+                        } else {
+                            // No QR code found in the image
+                            Toast.makeText(requireContext(), 
+                                    "No QR code found in the image", 
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Error processing image for QR code", e);
+                        Toast.makeText(requireContext(), 
+                                "Error processing image: " + e.getMessage(), 
+                                Toast.LENGTH_SHORT).show();
+                    });
+        } catch (Exception e) {
+            Log.e(TAG, "Error creating input image", e);
+            Toast.makeText(requireContext(), 
+                    "Error processing image: " + e.getMessage(), 
+                    Toast.LENGTH_SHORT).show();
         }
     }
-
+    
+    /**
+     * Launch QR result activity with the detected QR code value
+     */
+    private void launchQrResultActivity(String qrValue) {
+        try {
+            if (getActivity() != null) {
+                Intent intent = new Intent(requireContext(), QrResultActivity.class);
+                intent.putExtra(QrResultActivity.EXTRA_QR_VALUE, qrValue);
+                startActivity(intent);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error launching QR result activity", e);
+            showToast("Error: " + e.getMessage());
+        }
+    }
+    
     /**
      * Initialize and start the camera
      */
@@ -289,27 +292,16 @@ public class ScanFragment extends Fragment {
                     // Unbind any existing use cases
                     cameraProvider.unbindAll();
 
-                    // Set up QR scanning if needed
-                    if (forQrScan) {
-                        // Set up image analysis use case for QR scanning
-                        imageAnalysis = new ImageAnalysis.Builder()
-                                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                                .build();
-                        
-                        imageAnalysis.setAnalyzer(cameraExecutor, this::processImageForQrCode);
-                        
-                        // Bind use cases to camera
-                        cameraProvider.bindToLifecycle(
-                                (LifecycleOwner) this, cameraSelector, preview, imageCapture, imageAnalysis);
-                        
-                        // Change UI for QR scanning
-                        binding.btnCapture.setVisibility(View.VISIBLE);
-                        binding.toolbar.setTitle("Scan QR Code");
-                    } else {
-                        // Bind use cases to camera without analysis
-                        cameraProvider.bindToLifecycle(
-                                (LifecycleOwner) this, cameraSelector, preview, imageCapture);
-                    }
+                    // Set up image analysis use case for QR scanning
+                    imageAnalysis = new ImageAnalysis.Builder()
+                            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                            .build();
+                    
+                    imageAnalysis.setAnalyzer(cameraExecutor, this::processImageForQrCode);
+                    
+                    // Bind use cases to camera
+                    cameraProvider.bindToLifecycle(
+                            (LifecycleOwner) this, cameraSelector, preview, imageCapture, imageAnalysis);
                     
                     Log.d(TAG, "Camera successfully initialized");
 
@@ -326,7 +318,67 @@ public class ScanFragment extends Fragment {
             showToast("Error accessing camera: " + e.getMessage());
         }
     }
-
+    
+    /**
+     * Process image frame for QR code detection
+     */
+    @SuppressLint("UnsafeOptInUsageError")
+    private void processImageForQrCode(ImageProxy imageProxy) {
+        if (!isAdded() || getContext() == null) {
+            imageProxy.close();
+            return;
+        }
+        
+        InputImage inputImage = InputImage.fromMediaImage(
+                imageProxy.getImage(), imageProxy.getImageInfo().getRotationDegrees());
+        
+        barcodeScanner.process(inputImage)
+                .addOnSuccessListener(barcodes -> {
+                    if (barcodes.size() > 0) {
+                        Barcode barcode = barcodes.get(0);
+                        String qrValue = barcode.getRawValue();
+                        Log.d(TAG, "QR code detected: " + qrValue);
+                        
+                        // Stop camera analysis to prevent multiple detections
+                        if (imageAnalysis != null) {
+                            imageAnalysis.clearAnalyzer();
+                        }
+                        
+                        // Launch QR result activity
+                        launchQrResultActivity(qrValue);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error detecting QR code", e);
+                })
+                .addOnCompleteListener(task -> {
+                    imageProxy.close();
+                });
+    }
+    
+    /**
+     * Create a temporary file to store the image
+     */
+    private File createImageFile() {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        String imageFileName = "QR_" + timeStamp + "_";
+        File storageDir = requireContext().getExternalFilesDir(null);
+        
+        try {
+            File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+            );
+            return image;
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to create image file", e);
+            // If file creation fails, use a fallback approach
+            return new File(storageDir, imageFileName + ".jpg");
+        }
+    }
+    
     /**
      * Check if all required permissions are granted
      */
@@ -360,7 +412,7 @@ public class ScanFragment extends Fragment {
                 startCamera();
             } else {
                 Log.e(TAG, "Camera permission denied");
-                showToast("Camera permission is required for scanning documents");
+                showToast("Camera permission is required for scanning QR codes");
             }
         }
     }
@@ -373,110 +425,43 @@ public class ScanFragment extends Fragment {
             Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
         }
     }
-
+    
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         Log.d(TAG, "onDestroyView: Cleaning up resources");
-        cameraExecutor.shutdown();
+        
+        if (barcodeScanner != null) {
+            barcodeScanner.close();
+        }
+        
+        if (cameraExecutor != null) {
+            cameraExecutor.shutdown();
+        }
+        
         binding = null;
     }
     
     @Override
     public void onResume() {
         super.onResume();
-        Log.d(TAG, "onResume: Scan fragment resumed");
+        
+        // Restart camera analysis if it was cleared
+        if (isAdded() && imageAnalysis != null && barcodeScanner != null) {
+            imageAnalysis.setAnalyzer(cameraExecutor, this::processImageForQrCode);
+        }
+        
         if (allPermissionsGranted() && imageCapture == null) {
-            Log.d(TAG, "Starting camera on resume");
             startCamera();
         }
     }
-
-    /**
-     * Create a temporary file to store the image
-     */
-    private File createImageFile() {
-        // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
-        String imageFileName = "SCAN_" + timeStamp + "_";
-        File storageDir = requireContext().getExternalFilesDir(null);
-        
-        try {
-            File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-            );
-            return image;
-        } catch (IOException e) {
-            Log.e(TAG, "Failed to create image file", e);
-            // If file creation fails, use a fallback approach
-            return new File(storageDir, imageFileName + ".jpg");
-        }
-    }
-
-    /**
-     * Process image frame for QR code detection
-     */
-    private void processImageForQrCode(ImageProxy imageProxy) {
-        if (!isAdded() || getContext() == null) {
-            imageProxy.close();
-            return;
-        }
-        
-        @SuppressLint("UnsafeOptInUsageError")
-        InputImage inputImage = InputImage.fromMediaImage(
-                imageProxy.getImage(), imageProxy.getImageInfo().getRotationDegrees());
-        
-        barcodeScanner.process(inputImage)
-                .addOnSuccessListener(barcodes -> {
-                    if (barcodes.size() > 0) {
-                        Barcode barcode = barcodes.get(0);
-                        String qrValue = barcode.getRawValue();
-                        Log.d(TAG, "QR code detected: " + qrValue);
-                        
-                        // Stop camera analysis to prevent multiple detections
-                        if (imageAnalysis != null) {
-                            imageAnalysis.clearAnalyzer();
-                        }
-                        
-                        // Launch QR result activity
-                        launchQrResultActivity(qrValue);
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error detecting QR code", e);
-                })
-                .addOnCompleteListener(task -> {
-                    imageProxy.close();
-                });
-    }
     
     /**
-     * Launch QR result activity with the detected QR code value
+     * Process image URI for QR code detection
      */
-    private void launchQrResultActivity(String qrValue) {
+    private void processImageUriForQrCode(Uri imageUri) {
         try {
-            if (getActivity() != null) {
-                Intent intent = new Intent(requireContext(), com.quang.escan.ui.qr.QrResultActivity.class);
-                intent.putExtra(com.quang.escan.ui.qr.QrResultActivity.EXTRA_QR_VALUE, qrValue);
-                startActivity(intent);
-                
-                // Go back to home after launching the result activity
-                Navigation.findNavController(requireView()).navigateUp();
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error launching QR result activity", e);
-            showToast("Error: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Process a saved image file for QR code detection
-     */
-    private void processImageFileForQrCode(File imageFile) {
-        try {
-            InputImage inputImage = InputImage.fromFilePath(requireContext(), Uri.fromFile(imageFile));
+            InputImage inputImage = InputImage.fromFilePath(requireContext(), imageUri);
             
             barcodeScanner.process(inputImage)
                     .addOnSuccessListener(barcodes -> {
@@ -513,4 +498,4 @@ public class ScanFragment extends Fragment {
             Navigation.findNavController(requireView()).navigateUp();
         }
     }
-}
+} 
