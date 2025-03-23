@@ -86,11 +86,8 @@ public class HomeFragment extends Fragment implements
     }
 
     private void setupClickListeners() {
-        // Search button
-        binding.btnSearch.setOnClickListener(v -> {
-            Log.d(TAG, "Search clicked");
-            // Handle search action
-        });
+
+
         
         // Feature buttons
         setupFeatureButtons();

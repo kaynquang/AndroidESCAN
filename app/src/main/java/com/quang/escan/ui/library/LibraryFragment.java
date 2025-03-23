@@ -373,20 +373,7 @@ public class LibraryFragment extends Fragment implements DocumentAdapter.Documen
             Log.d(TAG, "Add button clicked: Navigating to scan");
             navController.navigate(R.id.navigation_scan);
         });
-        
-        // Search button
-        binding.btnSearch.setOnClickListener(v -> {
-            Log.d(TAG, "Search button clicked");
-            // Future: Implement search functionality
-            Toast.makeText(requireContext(), "Search functionality coming soon", Toast.LENGTH_SHORT).show();
-        });
-        
-        // Filter button
-        binding.btnFilter.setOnClickListener(v -> {
-            Log.d(TAG, "Filter button clicked");
-            // Future: Implement additional filtering options
-            Toast.makeText(requireContext(), "Filter functionality coming soon", Toast.LENGTH_SHORT).show();
-        });
+
     }
     
     /**
