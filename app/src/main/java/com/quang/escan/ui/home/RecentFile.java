@@ -9,6 +9,7 @@ public class RecentFile {
     private String fileName;
     private String dateModified;
     private Bitmap thumbnail;
+    private long tag; // Used to store document ID
 
     public RecentFile(String fileName, String dateModified, Bitmap thumbnail) {
         this.fileName = fileName;
@@ -38,5 +39,13 @@ public class RecentFile {
 
     public void setThumbnail(Bitmap thumbnail) {
         this.thumbnail = thumbnail;
+    }
+    
+    public long getTag() {
+        return tag;
+    }
+    
+    public void setTag(long tag) {
+        this.tag = tag;
     }
 } 

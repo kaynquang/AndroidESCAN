@@ -3,6 +3,8 @@ package com.quang.escan.ui.home;
 import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -23,8 +25,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.quang.escan.R;
 import com.quang.escan.databinding.FragmentHomeBinding;
+import com.quang.escan.model.ExtractedDocument;
+import com.quang.escan.ui.library.LibraryRepository;
 import com.quang.escan.ui.scan.ImageSourceDialogFragment;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,6 +48,7 @@ public class HomeFragment extends Fragment implements
     private FragmentHomeBinding binding;
     private NavController navController;
     private RecentFilesAdapter recentFilesAdapter;
+    private LibraryRepository libraryRepository;
     
     /**
      * Track which feature button was last clicked
@@ -68,8 +74,16 @@ public class HomeFragment extends Fragment implements
         Log.d(TAG, "onViewCreated: Setting up home fragment");
         
         navController = Navigation.findNavController(view);
+        libraryRepository = new LibraryRepository(requireContext());
         setupRecentFiles();
         setupClickListeners();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Refresh recent files when returning to the fragment
+        loadRecentFiles();
     }
 
     private void setupRecentFiles() {
@@ -80,9 +94,58 @@ public class HomeFragment extends Fragment implements
         recentFilesAdapter = new RecentFilesAdapter(new ArrayList<>());
         binding.recyclerviewRecentFiles.setAdapter(recentFilesAdapter);
         
-        // Show empty state view since we have no files
-        binding.emptyState.setVisibility(View.VISIBLE);
-        binding.recyclerviewRecentFiles.setVisibility(View.GONE);
+        // Load recent files
+        loadRecentFiles();
+    }
+
+    /**
+     * Load recent files from the library repository
+     */
+    private void loadRecentFiles() {
+        // Get all documents from repository
+        List<ExtractedDocument> documents = libraryRepository.getAllDocuments();
+        
+        if (documents.isEmpty()) {
+            // Show empty state if no documents
+            binding.emptyState.setVisibility(View.VISIBLE);
+            binding.recyclerviewRecentFiles.setVisibility(View.GONE);
+        } else {
+            // Convert documents to RecentFile objects
+            List<RecentFile> recentFiles = new ArrayList<>();
+            
+            for (ExtractedDocument document : documents) {
+                // Create thumbnail from image path if available
+                Bitmap thumbnail = null;
+                if (document.getImagePath() != null && !document.getImagePath().isEmpty()) {
+                    File imgFile = new File(document.getImagePath());
+                    if (imgFile.exists()) {
+                        thumbnail = BitmapFactory.decodeFile(document.getImagePath());
+                    }
+                }
+                
+                // Format date
+                String dateFormatted = new SimpleDateFormat("MMM dd, yyyy HH:mm", 
+                        Locale.getDefault()).format(document.getCreationDate());
+                
+                // Create recent file object
+                RecentFile recentFile = new RecentFile(
+                        document.getFileName(),
+                        dateFormatted,
+                        thumbnail);
+                
+                // Store document ID in the tag for later use
+                recentFile.setTag(document.getId());
+                
+                recentFiles.add(recentFile);
+            }
+            
+            // Update adapter
+            recentFilesAdapter.updateData(recentFiles);
+            
+            // Show RecyclerView and hide empty state
+            binding.emptyState.setVisibility(View.GONE);
+            binding.recyclerviewRecentFiles.setVisibility(View.VISIBLE);
+        }
     }
 
     private void setupClickListeners() {

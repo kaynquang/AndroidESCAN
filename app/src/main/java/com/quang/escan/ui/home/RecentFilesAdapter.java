@@ -1,16 +1,19 @@
 package com.quang.escan.ui.home;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.quang.escan.R;
+import com.quang.escan.ui.library.DocumentDetailActivity;
 
 import java.util.List;
 
@@ -23,6 +26,15 @@ public class RecentFilesAdapter extends RecyclerView.Adapter<RecentFilesAdapter.
 
     public RecentFilesAdapter(List<RecentFile> recentFiles) {
         this.recentFiles = recentFiles;
+    }
+    
+    /**
+     * Update the data in the adapter
+     * @param newData The new data to display
+     */
+    public void updateData(List<RecentFile> newData) {
+        this.recentFiles = newData;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -52,15 +64,24 @@ public class RecentFilesAdapter extends RecyclerView.Adapter<RecentFilesAdapter.
         // Set click listeners for buttons
         holder.shareButton.setOnClickListener(v -> {
             // Handle share action
+            String fileName = file.getFileName();
+            Toast.makeText(v.getContext(), "Sharing " + fileName, Toast.LENGTH_SHORT).show();
+            // TODO: Implement sharing functionality
         });
         
         holder.moreButton.setOnClickListener(v -> {
             // Show more options menu
+            Toast.makeText(v.getContext(), "More options", Toast.LENGTH_SHORT).show();
+            // TODO: Implement options menu
         });
         
         // Set click listener for the entire item
         holder.itemView.setOnClickListener(v -> {
-            // Open the file
+            // Open the file in DocumentDetailActivity
+            long documentId = file.getTag();
+            Intent intent = new Intent(v.getContext(), DocumentDetailActivity.class);
+            intent.putExtra(DocumentDetailActivity.EXTRA_DOCUMENT_ID, documentId);
+            v.getContext().startActivity(intent);
         });
     }
 

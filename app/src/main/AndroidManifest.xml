@@ -76,6 +76,12 @@
             android:exported="false"
             android:theme="@style/Theme.EScan" />
             
+        <!-- Document Detail Activity -->
+        <activity
+            android:name=".ui.library.DocumentDetailActivity"
+            android:exported="false"
+            android:theme="@style/Theme.EScan" />
+            
         <!-- Main Activity -->
         <activity
             android:name=".MainActivity"
