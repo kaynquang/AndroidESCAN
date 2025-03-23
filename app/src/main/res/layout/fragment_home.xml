@@ -143,72 +143,8 @@
             </LinearLayout>
 
             <!-- Watermark -->
-            <LinearLayout
-                android:id="@+id/feature_watermark"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:clickable="true"
-                android:focusable="true"
-                android:background="?attr/selectableItemBackground">
-
-                <FrameLayout
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:background="@drawable/feature_button_background">
-
-                    <ImageView
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_watermark"
-                        android:contentDescription="Watermark" />
-                </FrameLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Watermark"
-                    android:textColor="@color/text_primary"
-                    android:textSize="14sp" />
-            </LinearLayout>
 
             <!-- QR Scan moved to replace PDF Convert -->
-            <LinearLayout
-                android:id="@+id/feature_qr_scan"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:clickable="true"
-                android:focusable="true"
-                android:background="?attr/selectableItemBackground">
-
-                <FrameLayout
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:background="@drawable/feature_button_background">
-
-                    <ImageView
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_qr_scan"
-                        android:contentDescription="QR Scan" />
-                </FrameLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="QR Scan"
-                    android:textColor="@color/text_primary"
-                    android:textSize="14sp" />
-            </LinearLayout>
         </LinearLayout>
 
         <!-- Second row of features -->
@@ -264,11 +200,77 @@
 
             <!-- Empty space -->
             <LinearLayout
+                android:id="@+id/feature_qr_scan"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:background="@drawable/feature_button_background">
+
+                    <ImageView
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="QR Scan"
+                        android:src="@drawable/ic_qr_scan" />
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="QR Scan"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:orientation="vertical">
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/feature_watermark"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:background="@drawable/feature_button_background">
+
+                    <ImageView
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="Watermark"
+                        android:src="@drawable/ic_watermark" />
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Watermark"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp" />
             </LinearLayout>
         </LinearLayout>
 
