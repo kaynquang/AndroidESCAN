@@ -22,6 +22,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.quang.escan.MainActivity;
 import com.quang.escan.R;
 import com.quang.escan.databinding.ActivitySignInBinding;
+import com.quang.escan.util.AuthManager;
 
 /**
  * Activity that handles user sign-in with Firebase Authentication
@@ -33,6 +34,7 @@ public class SignInActivity extends AppCompatActivity {
     private ActivitySignInBinding binding;
     private FirebaseAuth firebaseAuth;
     private boolean passwordVisible = false;
+    private AuthManager authManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,8 +44,24 @@ public class SignInActivity extends AppCompatActivity {
 
         // Initialize Firebase Auth
         firebaseAuth = FirebaseAuth.getInstance();
+        authManager = AuthManager.getInstance(this);
         
         setupClickListeners();
+        
+        // Check if anonymous usage is exhausted and update UI accordingly
+        updateAnonymousButtonVisibility();
+    }
+    
+    /**
+     * Update the visibility of the anonymous sign-in button based on usage status
+     */
+    private void updateAnonymousButtonVisibility() {
+        // If anonymous usage is exhausted, hide the anonymous sign-in button
+        if (authManager.isAnonymousUsageExhausted()) {
+            binding.anonymousSignInButton.setVisibility(View.GONE);
+        } else {
+            binding.anonymousSignInButton.setVisibility(View.VISIBLE);
+        }
     }
     
     @Override
@@ -52,7 +70,8 @@ public class SignInActivity extends AppCompatActivity {
         // Check if user is already signed in
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
         if (currentUser != null) {
-            Log.d(TAG, "User already signed in: " + currentUser.getEmail());
+            Log.d(TAG, "User already signed in: " + 
+                    (currentUser.isAnonymous() ? "Anonymous" : currentUser.getEmail()));
             navigateToMainActivity();
         }
     }
@@ -69,6 +88,12 @@ public class SignInActivity extends AppCompatActivity {
             if (validateInputs()) {
                 attemptSignIn();
             }
+        });
+        
+        // Anonymous sign in button click
+        binding.anonymousSignInButton.setOnClickListener(v -> {
+            Log.d(TAG, "Anonymous sign in button clicked");
+            showAnonymousSignInWarning();
         });
 
         // Forgot password click
@@ -107,6 +132,50 @@ public class SignInActivity extends AppCompatActivity {
             }
             // Move cursor to the end of the text
             binding.password.setSelection(binding.password.getText().length());
+        });
+    }
+    
+    /**
+     * Show warning dialog before anonymous sign in
+     */
+    private void showAnonymousSignInWarning() {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Continue as Guest")
+                .setMessage("As a guest user, you'll only have limited access to features:\n\n" +
+                        "• You can only use Extract Text feature up to 3 times\n" +
+                        "• Your scanned documents won't be saved to your account\n\n" +
+                        "Create an account to unlock all features!")
+                .setPositiveButton("Continue as Guest", (dialog, which) -> {
+                    attemptAnonymousSignIn();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+    
+    /**
+     * Attempt anonymous sign in
+     */
+    private void attemptAnonymousSignIn() {
+        showLoading(true);
+        binding.anonymousSignInButton.setEnabled(false);
+        binding.anonymousSignInButton.setText("Connecting...");
+        
+        authManager.signInAnonymously(this, new AuthManager.OnAuthCompleteListener() {
+            @Override
+            public void onAuthComplete(boolean success, String errorMessage) {
+                if (success) {
+                    Log.d(TAG, "Anonymous sign in success");
+                    navigateToMainActivity();
+                } else {
+                    Log.w(TAG, "Anonymous sign in failed: " + errorMessage);
+                    Toast.makeText(SignInActivity.this, 
+                            "Failed to sign in as guest: " + errorMessage, 
+                            Toast.LENGTH_LONG).show();
+                    binding.anonymousSignInButton.setEnabled(true);
+                    binding.anonymousSignInButton.setText("CONTINUE WITHOUT ACCOUNT");
+                }
+                showLoading(false);
+            }
         });
     }
 
@@ -179,7 +248,11 @@ public class SignInActivity extends AppCompatActivity {
 
     private void signInSuccess(FirebaseUser user) {
         if (user != null) {
-            Toast.makeText(this, "Sign in successful", Toast.LENGTH_SHORT).show();
+            // Reset usage counts for anonymous users who sign in with an account
+            if (authManager.isAnonymousUser()) {
+                authManager.resetUsageCounts();
+            }
+            
             navigateToMainActivity();
         }
     }
@@ -215,9 +288,27 @@ public class SignInActivity extends AppCompatActivity {
         if (isLoading) {
             binding.signInButton.setEnabled(false);
             binding.signInButton.setText("Signing In...");
+            binding.anonymousSignInButton.setEnabled(false);
         } else {
             binding.signInButton.setEnabled(true);
             binding.signInButton.setText("LOG IN");
+            binding.anonymousSignInButton.setEnabled(true);
+        }
+    }
+    
+    /**
+     * Handle back button press
+     * If anonymous usage is exhausted, show a message to user
+     */
+    @Override
+    public void onBackPressed() {
+        if (authManager.isAnonymousUsageExhausted()) {
+            // If anonymous usage is exhausted, show a message
+            Toast.makeText(this, 
+                    "You need to sign in or create an account to continue using the app.", 
+                    Toast.LENGTH_LONG).show();
+        } else {
+            super.onBackPressed();
         }
     }
 } 

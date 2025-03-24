@@ -37,6 +37,8 @@ import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.common.InputImage;
 import com.quang.escan.R;
 import com.quang.escan.databinding.FragmentScanBinding;
+import com.quang.escan.ui.scan.ImageSourceDialogFragment;
+import com.quang.escan.util.FileHelper;
 
 import java.io.File;
 import java.io.IOException;
@@ -180,10 +182,12 @@ public class ScanFragment extends Fragment {
         
         try {
             // Get URI for the created file
-            Uri photoURI = FileProvider.getUriForFile(
-                    requireContext(),
-                    "com.quang.escan.fileprovider",
-                    photoFile);
+            Uri photoURI = FileHelper.getFileProviderUri(requireContext(), photoFile);
+            
+            if (photoURI == null) {
+                Toast.makeText(requireContext(), "Failed to create file for photo", Toast.LENGTH_SHORT).show();
+                return;
+            }
             
             // Take the picture
             imageCapture.takePicture(
@@ -197,6 +201,14 @@ public class ScanFragment extends Fragment {
                             if (forQrScan) {
                                 // If in QR scan mode, process the image directly for QR codes
                                 processImageFileForQrCode(photoFile);
+                            } else if (getArguments() != null && getArguments().getBoolean("for_watermark", false)) {
+                                // If for watermark, navigate directly to watermark fragment
+                                Bundle args = new Bundle();
+                                args.putString("imagePath", currentPhotoPath);
+                                
+                                // Navigate to watermark screen
+                                Navigation.findNavController(requireView()).navigate(
+                                        R.id.navigation_watermark, args);
                             } else {
                                 // For regular document scanning, navigate to image edit screen
                                 Bundle args = new Bundle();

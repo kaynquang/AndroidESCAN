@@ -1,19 +1,16 @@
 package com.quang.escan.ui.home;
 
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.quang.escan.R;
-import com.quang.escan.ui.library.DocumentDetailActivity;
 
 import java.util.List;
 
@@ -23,17 +20,28 @@ import java.util.List;
 public class RecentFilesAdapter extends RecyclerView.Adapter<RecentFilesAdapter.FileViewHolder> {
 
     private List<RecentFile> recentFiles;
+    private OnItemClickListener listener;
+
+    /**
+     * Interface for handling item clicks
+     */
+    public interface OnItemClickListener {
+        void onItemClick(RecentFile file);
+        void onShareClick(RecentFile file);
+        void onMoreClick(RecentFile file);
+    }
 
     public RecentFilesAdapter(List<RecentFile> recentFiles) {
         this.recentFiles = recentFiles;
     }
     
-    /**
-     * Update the data in the adapter
-     * @param newData The new data to display
-     */
-    public void updateData(List<RecentFile> newData) {
-        this.recentFiles = newData;
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.listener = listener;
+    }
+    
+    public void updateRecentFiles(List<RecentFile> newFiles) {
+        this.recentFiles.clear();
+        this.recentFiles.addAll(newFiles);
         notifyDataSetChanged();
     }
 
@@ -63,25 +71,22 @@ public class RecentFilesAdapter extends RecyclerView.Adapter<RecentFilesAdapter.
         
         // Set click listeners for buttons
         holder.shareButton.setOnClickListener(v -> {
-            // Handle share action
-            String fileName = file.getFileName();
-            Toast.makeText(v.getContext(), "Sharing " + fileName, Toast.LENGTH_SHORT).show();
-            // TODO: Implement sharing functionality
+            if (listener != null) {
+                listener.onShareClick(file);
+            }
         });
         
         holder.moreButton.setOnClickListener(v -> {
-            // Show more options menu
-            Toast.makeText(v.getContext(), "More options", Toast.LENGTH_SHORT).show();
-            // TODO: Implement options menu
+            if (listener != null) {
+                listener.onMoreClick(file);
+            }
         });
         
         // Set click listener for the entire item
         holder.itemView.setOnClickListener(v -> {
-            // Open the file in DocumentDetailActivity
-            long documentId = file.getTag();
-            Intent intent = new Intent(v.getContext(), DocumentDetailActivity.class);
-            intent.putExtra(DocumentDetailActivity.EXTRA_DOCUMENT_ID, documentId);
-            v.getContext().startActivity(intent);
+            if (listener != null) {
+                listener.onItemClick(file);
+            }
         });
     }
 
@@ -103,7 +108,6 @@ public class RecentFilesAdapter extends RecyclerView.Adapter<RecentFilesAdapter.
             fileName = itemView.findViewById(R.id.text_file_name);
             fileDate = itemView.findViewById(R.id.text_file_date);
             shareButton = itemView.findViewById(R.id.btn_share);
-            moreButton = itemView.findViewById(R.id.btn_more);
         }
     }
 } 

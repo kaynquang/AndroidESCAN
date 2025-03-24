@@ -59,6 +59,30 @@ public class LibraryRepository {
         Log.d(TAG, "Document saved with ID: " + id);
         return id;
     }
+    
+    /**
+     * Update an existing document in the database
+     * @param document The document to update
+     * @return The number of rows affected (should be 1 if successful)
+     */
+    public long updateDocument(ExtractedDocument document) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        values.put(COLUMN_FILE_NAME, document.getFileName());
+        values.put(COLUMN_CATEGORY, document.getCategory());
+        values.put(COLUMN_EXTRACTED_TEXT, document.getExtractedText());
+        values.put(COLUMN_IMAGE_PATH, document.getImagePath());
+        
+        // Don't update creation date - it should remain as is
+
+        String whereClause = COLUMN_ID + " = ?";
+        String[] whereArgs = {String.valueOf(document.getId())};
+        
+        int rowsAffected = db.update(TABLE_DOCUMENTS, values, whereClause, whereArgs);
+        Log.d(TAG, "Document updated, rows affected: " + rowsAffected);
+        return rowsAffected;
+    }
 
     /**
      * Get a document by its ID

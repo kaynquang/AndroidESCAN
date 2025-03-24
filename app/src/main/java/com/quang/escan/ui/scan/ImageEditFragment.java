@@ -191,6 +191,34 @@ public class ImageEditFragment extends Fragment {
         // Crop image button
         binding.btnCrop.setOnClickListener(v -> cropImage());
         
+        // Watermark button - navigate to watermark fragment
+        binding.btnWatermark.setOnClickListener(v -> {
+            if (imagePath == null) {
+                showToast("Image not available");
+                return;
+            }
+            
+            // Save rotated image if needed
+            if (rotationDegrees > 0 && currentBitmap != null) {
+                // Save the current bitmap to the same file
+                try {
+                    java.io.FileOutputStream out = new java.io.FileOutputStream(imagePath);
+                    currentBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+                    out.flush();
+                    out.close();
+                } catch (Exception e) {
+                    Log.e(TAG, "Error saving rotated image", e);
+                    showToast("Error saving changes: " + e.getMessage());
+                    return;
+                }
+            }
+            
+            // Navigate to watermark fragment
+            Bundle args = new Bundle();
+            args.putString("imagePath", imagePath);
+            navController.navigate(R.id.action_image_edit_to_watermark, args);
+        });
+        
         // Next button - navigate to appropriate activity based on flags
         binding.btnNext.setOnClickListener(v -> {
             if (imagePath == null) {

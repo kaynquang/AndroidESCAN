@@ -36,7 +36,7 @@ public class LibraryFragment extends Fragment implements DocumentAdapter.Documen
     private NavController navController;
     private LibraryRepository repository;
     private DocumentAdapter adapter;
-    private String[] categories = {"Personal", "Work", "School"};
+    private String[] categories = {"Personal", "Work", "School", "Others"};
 
     @Nullable
     @Override
@@ -90,20 +90,8 @@ public class LibraryFragment extends Fragment implements DocumentAdapter.Documen
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 Log.d(TAG, "Tab selected: " + tab.getPosition());
-                // If it's the last tab (add button), show category management dialog
-                if (tab.getPosition() == binding.tabLayout.getTabCount() - 1) {
-                    showCategoryManagementDialog();
-                    
-                    // Reselect the previous tab
-                    if (tab.getPosition() > 0) {
-                        binding.tabLayout.getTabAt(tab.getPosition() - 1).select();
-                    } else {
-                        binding.tabLayout.getTabAt(0).select();
-                    }
-                } else {
-                    // Filter documents based on selected category
-                    filterDocumentsByCategory(tab.getPosition());
-                }
+                // Filter documents based on selected category
+                filterDocumentsByCategory(tab.getPosition());
             }
 
             @Override
@@ -113,200 +101,9 @@ public class LibraryFragment extends Fragment implements DocumentAdapter.Documen
 
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
-                // If it's the add button tab, show category management
-                if (tab.getPosition() == binding.tabLayout.getTabCount() - 1) {
-                    showCategoryManagementDialog();
-                }
+                // Not needed
             }
         });
-    }
-    
-    /**
-     * Show dialog for managing categories
-     */
-    private void showCategoryManagementDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("Manage Categories");
-        
-        // Options
-        String[] options = {"Add New Category", "Rename Category", "Remove Category"};
-        
-        builder.setItems(options, (dialog, which) -> {
-            switch (which) {
-                case 0:
-                    showAddCategoryDialog();
-                    break;
-                case 1:
-                    showRenameCategoryDialog();
-                    break;
-                case 2:
-                    showRemoveCategoryDialog();
-                    break;
-            }
-        });
-        
-        builder.setNegativeButton("Cancel", null);
-        builder.show();
-    }
-    
-    /**
-     * Show dialog for adding a new category
-     */
-    private void showAddCategoryDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("Add New Category");
-        
-        // Input field
-        final EditText input = new EditText(requireContext());
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
-        builder.setView(input);
-        
-        builder.setPositiveButton("Add", (dialog, which) -> {
-            String categoryName = input.getText().toString().trim();
-            if (!categoryName.isEmpty()) {
-                addCategory(categoryName);
-            } else {
-                Toast.makeText(requireContext(), "Category name cannot be empty", Toast.LENGTH_SHORT).show();
-            }
-        });
-        
-        builder.setNegativeButton("Cancel", null);
-        builder.show();
-    }
-    
-    /**
-     * Add a new category tab
-     */
-    private void addCategory(String categoryName) {
-        // For a complete implementation, you would update categories in a database
-        // Here we just add a new tab
-        TabLayout.Tab newTab = binding.tabLayout.newTab();
-        newTab.setText(categoryName);
-        
-        // Insert before the + tab
-        binding.tabLayout.addTab(newTab, binding.tabLayout.getTabCount() - 1);
-        
-        // Add to categories array
-        String[] newCategories = new String[categories.length + 1];
-        System.arraycopy(categories, 0, newCategories, 0, categories.length);
-        newCategories[categories.length] = categoryName;
-        categories = newCategories;
-        
-        Toast.makeText(requireContext(), "Category added: " + categoryName, Toast.LENGTH_SHORT).show();
-    }
-    
-    /**
-     * Show dialog for renaming a category
-     */
-    private void showRenameCategoryDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("Select Category to Rename");
-        
-        // Filter out the + tab
-        String[] tabCategories = new String[categories.length];
-        System.arraycopy(categories, 0, tabCategories, 0, categories.length);
-        
-        builder.setItems(tabCategories, (dialog, which) -> {
-            showRenameInputDialog(which);
-        });
-        
-        builder.setNegativeButton("Cancel", null);
-        builder.show();
-    }
-    
-    /**
-     * Show dialog for inputting new category name
-     */
-    private void showRenameInputDialog(int categoryIndex) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("Rename " + categories[categoryIndex]);
-        
-        // Input field
-        final EditText input = new EditText(requireContext());
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
-        input.setText(categories[categoryIndex]);
-        builder.setView(input);
-        
-        builder.setPositiveButton("Rename", (dialog, which) -> {
-            String newName = input.getText().toString().trim();
-            if (!newName.isEmpty()) {
-                renameCategory(categoryIndex, newName);
-            } else {
-                Toast.makeText(requireContext(), "Category name cannot be empty", Toast.LENGTH_SHORT).show();
-            }
-        });
-        
-        builder.setNegativeButton("Cancel", null);
-        builder.show();
-    }
-    
-    /**
-     * Rename a category
-     */
-    private void renameCategory(int categoryIndex, String newName) {
-        // For a complete implementation, you would update categories in a database
-        // Here we just update the tab text
-        TabLayout.Tab tab = binding.tabLayout.getTabAt(categoryIndex);
-        if (tab != null) {
-            tab.setText(newName);
-            categories[categoryIndex] = newName;
-            Toast.makeText(requireContext(), "Category renamed to: " + newName, Toast.LENGTH_SHORT).show();
-        }
-    }
-    
-    /**
-     * Show dialog for removing a category
-     */
-    private void showRemoveCategoryDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("Select Category to Remove");
-        
-        // Filter out the + tab
-        String[] tabCategories = new String[categories.length];
-        System.arraycopy(categories, 0, tabCategories, 0, categories.length);
-        
-        builder.setItems(tabCategories, (dialog, which) -> {
-            removeCategory(which);
-        });
-        
-        builder.setNegativeButton("Cancel", null);
-        builder.show();
-    }
-    
-    /**
-     * Remove a category
-     */
-    private void removeCategory(int categoryIndex) {
-        // Don't allow removing the last real category
-        if (categories.length <= 1) {
-            Toast.makeText(requireContext(), "Cannot remove the last category", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        
-        // For a complete implementation, you would update categories in a database
-        // Here we just remove the tab
-        TabLayout.Tab tab = binding.tabLayout.getTabAt(categoryIndex);
-        if (tab != null) {
-            String categoryName = categories[categoryIndex];
-            
-            // Remove the tab
-            binding.tabLayout.removeTab(tab);
-            
-            // Update categories array
-            String[] newCategories = new String[categories.length - 1];
-            int newIndex = 0;
-            for (int i = 0; i < categories.length; i++) {
-                if (i != categoryIndex) {
-                    newCategories[newIndex++] = categories[i];
-                }
-            }
-            categories = newCategories;
-            
-            // Select first tab
-            binding.tabLayout.getTabAt(0).select();
-            
-            Toast.makeText(requireContext(), "Category removed: " + categoryName, Toast.LENGTH_SHORT).show();
-        }
     }
 
     /**
@@ -367,13 +164,6 @@ public class LibraryFragment extends Fragment implements DocumentAdapter.Documen
      */
     private void setupClickListeners() {
         Log.d(TAG, "Setting up click listeners");
-        
-        // Add button to create new scan
-        binding.fabAdd.setOnClickListener(v -> {
-            Log.d(TAG, "Add button clicked: Navigating to scan");
-            navController.navigate(R.id.navigation_scan);
-        });
-
     }
     
     /**

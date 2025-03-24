@@ -12,14 +12,14 @@
         android:id="@+id/btn_close"
         android:layout_width="48dp"
         android:layout_height="48dp"
+        android:layout_marginTop="16dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="Close"
         android:padding="12dp"
         android:src="@android:drawable/ic_menu_close_clear_cancel"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:tint="@color/text_primary"
-        android:layout_marginTop="16dp" />
+        app:tint="@color/text_primary" />
 
     <TextView
         android:id="@+id/title"
@@ -128,10 +128,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
+        android:buttonTint="@color/primary"
         android:text="Remember me"
         android:textColor="@color/text_secondary"
         android:textSize="14sp"
-        android:buttonTint="@color/primary"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/password_container" />
 
@@ -142,9 +142,9 @@
         android:text="Forgot Password?"
         android:textColor="@color/primary"
         android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="@id/remember_me"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/remember_me"
-        app:layout_constraintBottom_toBottomOf="@id/remember_me" />
+        app:layout_constraintTop_toTopOf="@id/remember_me" />
 
     <Button
         android:id="@+id/sign_in_button"
@@ -159,7 +159,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/remember_me" />
 
+    <Button
+        android:id="@+id/anonymous_sign_in_button"
+        android:layout_width="158dp"
+        android:layout_height="55dp"
+        android:layout_marginTop="36dp"
+        android:background="@color/background"
+        android:text="GUEST LOG IN"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/sign_in_button" />
+
     <LinearLayout
+        android:id="@+id/linearLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="32dp"
@@ -176,14 +191,24 @@
             android:textColor="@color/text_secondary"
             android:textSize="14sp" />
 
-    <TextView
-        android:id="@+id/sign_up_link"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Sign Up"
-        android:textColor="@color/primary"
-        android:textSize="14sp"
+        <TextView
+            android:id="@+id/sign_up_link"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sign Up"
+            android:textColor="@color/primary"
+            android:textSize="14sp"
             android:textStyle="bold" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="- Or -"
+        app:layout_constraintBottom_toTopOf="@+id/anonymous_sign_in_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout> 

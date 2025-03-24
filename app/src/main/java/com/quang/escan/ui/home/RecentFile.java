@@ -9,12 +9,13 @@ public class RecentFile {
     private String fileName;
     private String dateModified;
     private Bitmap thumbnail;
-    private long tag; // Used to store document ID
+    private long documentId; // ID of the document in the library database
 
     public RecentFile(String fileName, String dateModified, Bitmap thumbnail) {
         this.fileName = fileName;
         this.dateModified = dateModified;
         this.thumbnail = thumbnail;
+        this.documentId = -1; // Default to invalid ID
     }
 
     public String getFileName() {
@@ -41,11 +42,11 @@ public class RecentFile {
         this.thumbnail = thumbnail;
     }
     
-    public long getTag() {
-        return tag;
+    public long getDocumentId() {
+        return documentId;
     }
     
-    public void setTag(long tag) {
-        this.tag = tag;
+    public void setDocumentId(long documentId) {
+        this.documentId = documentId;
     }
 } 

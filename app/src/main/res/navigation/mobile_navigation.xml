@@ -45,6 +45,19 @@
             android:name="feature_type"
             app:argType="integer"
             android:defaultValue="-1" />
+        <action
+            android:id="@+id/action_image_edit_to_watermark"
+            app:destination="@id/navigation_watermark" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_watermark"
+        android:name="com.quang.escan.ui.watermark.WatermarkFragment"
+        android:label="Add Watermark"
+        tools:layout="@layout/fragment_watermark">
+        <argument
+            android:name="imagePath"
+            app:argType="string" />
     </fragment>
 
     <fragment

@@ -112,7 +112,7 @@
             android:gravity="center"
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/btn_next"
+            app:layout_constraintEnd_toStartOf="@id/btn_watermark"
             app:layout_constraintStart_toEndOf="@id/btn_rotate"
             app:layout_constraintTop_toTopOf="parent">
 
@@ -132,6 +132,34 @@
                 android:textSize="12sp" />
         </LinearLayout>
 
+        <!-- Watermark button -->
+        <LinearLayout
+            android:id="@+id/btn_watermark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btn_next"
+            app:layout_constraintStart_toEndOf="@id/btn_crop"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="Watermark"
+                android:src="@android:drawable/ic_menu_edit"
+                app:tint="@color/white" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Watermark"
+                android:textColor="@color/white"
+                android:textSize="12sp" />
+        </LinearLayout>
+
         <!-- Next button -->
         <LinearLayout
             android:id="@+id/btn_next"
@@ -141,7 +169,7 @@
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/btn_crop"
+            app:layout_constraintStart_toEndOf="@id/btn_watermark"
             app:layout_constraintTop_toTopOf="parent">
 
             <ImageView

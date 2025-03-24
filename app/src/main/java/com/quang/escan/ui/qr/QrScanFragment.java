@@ -37,6 +37,7 @@ import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.common.InputImage;
 import com.quang.escan.R;
 import com.quang.escan.databinding.FragmentQrScanBinding;
+import com.quang.escan.util.FileHelper;
 
 import java.io.File;
 import java.io.IOException;
@@ -159,10 +160,12 @@ public class QrScanFragment extends Fragment {
         
         try {
             // Get URI for the created file
-            Uri photoURI = FileProvider.getUriForFile(
-                    requireContext(),
-                    "com.quang.escan.fileprovider",
-                    photoFile);
+            Uri photoURI = FileHelper.getFileProviderUri(requireContext(), photoFile);
+            
+            if (photoURI == null) {
+                showToast("Failed to create file for photo");
+                return;
+            }
             
             // Take the picture
             imageCapture.takePicture(
